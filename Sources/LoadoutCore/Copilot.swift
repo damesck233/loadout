@@ -54,7 +54,7 @@ public final class Copilot: @unchecked Sendable {
         do {
             try task.run()
         } catch {
-            throw LoadoutError.io("Couldn't run \(cli.label): \(error.localizedDescription)")
+            throw LoadoutError.io("无法运行 \(cli.label)：\(error.localizedDescription)")
         }
 
         // Read while it runs, otherwise a chatty answer fills the pipe and deadlocks.

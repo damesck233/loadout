@@ -97,12 +97,15 @@ cat > "$APP/Contents/Info.plist" <<PLIST
          what stops a man in the middle handing the app a different Loadout.
 
          SUAllowsAutomaticUpdates is false on purpose: Loadout asks before it replaces itself.
-         Installing silently under somebody working in the app is not a decision to take for them. -->
+         Installing silently under somebody working in the app is not a decision to take for them.
+
+         Chinese fork: the feed is upstream's English build, so accepting an update would replace
+         this localised copy. Automatic checks are off; rebuild from this fork to update. -->
     <key>SUFeedURL</key><string>https://github.com/migsilva89/loadout/releases/latest/download/appcast.xml</string>
     <key>SUPublicEDKey</key><string>lUaE3YVkBVqKzXHSQ5Kuex3WtTnffdZtNfHTFbA85ts=</string>
     <key>SURequireSignedFeed</key><true/>
     <key>SUVerifyUpdateBeforeExtraction</key><true/>
-    <key>SUEnableAutomaticChecks</key><true/>
+    <key>SUEnableAutomaticChecks</key><false/>
     <key>SUAllowsAutomaticUpdates</key><false/>
     <key>SUScheduledCheckInterval</key><integer>86400</integer>
     <key>SUSendProfileInfo</key><false/>

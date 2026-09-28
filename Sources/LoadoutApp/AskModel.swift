@@ -93,7 +93,7 @@ final class AskModel {
     func openGlobal(cli: AssistantCLI) -> Bool {
         if isGlobal && self.cli?.id == cli.id { return true }
         guard canLeaveConversation else {
-            report?("Stop the reply and save or reject the proposed changes before switching assistants.")
+            report?("切换助手前，先停止回复，并保存或拒绝建议的更改。")
             return false
         }
         runner.cancel()
@@ -121,7 +121,7 @@ final class AskModel {
     @discardableResult
     func attach(_ context: ChatContext) -> Bool {
         guard isGlobal, !isRunning else {
-            report?("Wait for the reply to finish before changing attachments.")
+            report?("等回复结束后再更改附件。")
             return false
         }
         guard !contexts.contains(where: { $0.id == context.id || ($0.origin == context.origin && $0.documentName == context.documentName) }) else { return true }
@@ -141,7 +141,7 @@ final class AskModel {
         guard !proposals.contains(where: {
             context.relativePath(for: $0.id) != nil && (!$0.pending.isEmpty || !$0.accepted.isEmpty)
         }) else {
-            report?("Save or reject this attachment's changes before removing it.")
+            report?("移除这个附件前，先保存或拒绝它的更改。")
             return
         }
         do {
@@ -259,7 +259,7 @@ final class AskModel {
     /// What was asked first, which is how a conversation is recognised in a list.
     private var firstAsked: String {
         let text = entries.first { if case .you = $0.kind { return true } else { return false } }?.text
-        return (text ?? "Untitled").trimmingCharacters(in: .whitespacesAndNewlines)
+        return (text ?? "未命名").trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// True while any change anywhere is undecided — what stops a working copy being deleted.
@@ -307,7 +307,7 @@ final class AskModel {
     /// proposes changes against today's file rather than against the file as it was then.
     func resume(_ conversation: AskConversation) {
         guard canLeaveConversation else {
-            report?("Stop the reply and save or reject the proposed changes before opening another conversation.")
+            report?("打开其他对话前，先停止回复，并保存或拒绝建议的更改。")
             return
         }
         runner.cancel()
@@ -336,7 +336,7 @@ final class AskModel {
             // The CLI has pruned it. Say so rather than showing an empty panel that looks broken.
             entries = [Entry(
                 kind: .notice,
-                text: "\(conversation.cliID) no longer has this conversation's messages. Carrying on from it still works."
+                text: "\(conversation.cliID) 已不再保存这段对话的消息，但仍然可以接着它继续聊。"
             )]
         }
         proposals = []
@@ -361,7 +361,7 @@ final class AskModel {
         // under History rather than deleted, so there is nothing to look up by assistant.
         guard let itemID else { return }
         guard canLeaveConversation else {
-            report?("Stop the reply and save or reject the proposed changes before starting a new conversation.")
+            report?("开始新对话前，先停止回复，并保存或拒绝建议的更改。")
             return
         }
         runner.cancel()

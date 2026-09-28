@@ -18,9 +18,9 @@ struct AppearanceSettings: View {
 
     var body: some View {
         SettingsGroup(
-            title: "Theme",
+            title: "主题",
             note: themes.name.hint,
-            footnote: "The window changes as you pick, and the choice is remembered for next launch."
+            footnote: "选中后窗口立即变化，下次启动时仍会沿用。"
         ) {
             HStack(spacing: 18) {
                 ForEach(ThemeName.allCases) { theme in
@@ -33,15 +33,14 @@ struct AppearanceSettings: View {
         }
 
         SettingsGroup(
-            title: "The list",
-            footnote: "Compact drops the descriptions and tightens the rows. With eighty skills the "
-                + "descriptions are what turns the column into a wall, and somebody who knows their "
-                + "own skills by name is only paying to scroll."
+            title: "列表",
+            footnote: "紧凑模式去掉描述，行距也更紧。有八十个技能时，正是这些描述让一栏变成一堵墙，"
+                + "如果你叫得出自己每个技能的名字，描述只会让你多滚几屏。"
         ) {
-            SettingsRow(label: "Density", dividing: false) {
+            SettingsRow(label: "密度", dividing: false) {
                 Picker("", selection: $density) {
-                    Text("Comfortable").tag("comfortable")
-                    Text("Compact").tag("compact")
+                    Text("宽松").tag("comfortable")
+                    Text("紧凑").tag("compact")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -51,10 +50,10 @@ struct AppearanceSettings: View {
         }
 
         SettingsGroup(
-            title: "Reading",
-            footnote: "⌘+ and ⌘− change the size from anywhere; ⌘0 puts it back."
+            title: "阅读",
+            footnote: "在任何地方按 ⌘+ 和 ⌘− 都能调整大小，⌘0 恢复默认。"
         ) {
-            SettingsRow(label: "Text size") {
+            SettingsRow(label: "文字大小") {
                 HStack(spacing: 10) {
                     Slider(value: $readerFontSize, in: 12...22, step: 1)
                         .frame(width: 160)
@@ -62,11 +61,11 @@ struct AppearanceSettings: View {
                     SettingsValue(text: "\(Int(readerFontSize)) pt")
                 }
             }
-            SettingsRow(label: "Typeface") {
+            SettingsRow(label: "字体") {
                 Picker("", selection: $readerFont) {
-                    Text("System").tag("system")
-                    Text("Serif").tag("serif")
-                    Text("Mono").tag("mono")
+                    Text("系统").tag("system")
+                    Text("衬线").tag("serif")
+                    Text("等宽").tag("mono")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -74,14 +73,14 @@ struct AppearanceSettings: View {
                 .pointingHand()
             }
             SettingsRow(
-                label: "Reading background",
-                sub: "The ground the document sits on, in the pane on the right",
+                label: "阅读背景",
+                sub: "右侧面板里文档下面的底色",
                 dividing: false
             ) {
                 Picker("", selection: $readerBackground) {
-                    Text("Card").tag("card")
-                    Text("Darker").tag("darker")
-                    Text("Ink").tag("ink")
+                    Text("卡片").tag("card")
+                    Text("更暗").tag("darker")
+                    Text("墨黑").tag("ink")
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()

@@ -85,7 +85,7 @@ struct DetailsSummaryStrip: View {
             .contentShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
-        .help("Show the token budget, the details and the assistants again")
+        .help("重新显示 token 预算、详情和助手")
         .pointingHand()
     }
 
@@ -110,7 +110,7 @@ struct DetailsChip: View {
             HStack(spacing: 4) {
                 Image(systemName: collapsed ? "chevron.down" : "chevron.up")
                     .font(.system(size: 12, weight: .medium))
-                Text(collapsed ? "Show details" : "Hide details")
+                Text(collapsed ? "显示详情" : "隐藏详情")
                     .font(.system(size: 11.5))
             }
             .foregroundStyle(V2.textMid)
@@ -121,7 +121,7 @@ struct DetailsChip: View {
             .contentShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
-        .help(collapsed ? "Bring the fact cards back (⌥⌘I)" : "Fold the fact cards away and give the document the room (⌥⌘I)")
+        .help(collapsed ? "重新显示信息卡片（⌥⌘I）" : "收起信息卡片，把空间留给文档（⌥⌘I）")
         .pointingHand()
     }
 }
@@ -152,7 +152,7 @@ struct DetailsSeam: View {
                     // stacked, reading as a surface being pulled in one direction.
                     DoubleChevron(up: !collapsed)
                         .frame(width: 13, height: 9)
-                    Text(collapsed ? "Show details" : "Hide details")
+                    Text(collapsed ? "显示详情" : "隐藏详情")
                         .font(.system(size: 11))
                 }
                 // White text on the neutral well, not the theme accent. Three loudnesses were drawn
@@ -176,7 +176,7 @@ struct DetailsSeam: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.12), value: hovering)
-        .help(collapsed ? "Bring the fact cards back (⌥⌘I)" : "Fold the fact cards away and give the document the room (⌥⌘I)")
+        .help(collapsed ? "重新显示信息卡片（⌥⌘I）" : "收起信息卡片，把空间留给文档（⌥⌘I）")
         .pointingHand()
     }
 }

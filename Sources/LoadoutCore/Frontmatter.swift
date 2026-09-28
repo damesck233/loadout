@@ -35,13 +35,13 @@ public struct Frontmatter: Equatable, Sendable {
     public static func parse(_ text: String) -> Frontmatter {
         let lines = text.components(separatedBy: "\n")
         guard let first = lines.first, first.trimmingCharacters(in: .whitespaces) == "---" else {
-            let missing = "Missing frontmatter: add a --- block at the start."
+            let missing = "缺少 frontmatter：在文件开头加一个 --- 块。"
             return Frontmatter(body: text, warning: missing, structuralWarning: missing)
         }
         guard let closing = lines.dropFirst().firstIndex(where: {
             $0.trimmingCharacters(in: .whitespaces) == "---"
         }) else {
-            let unclosed = "The frontmatter opens but never closes with ---."
+            let unclosed = "frontmatter 开了头，但没有用 --- 结束。"
             return Frontmatter(body: text, warning: unclosed, structuralWarning: unclosed)
         }
 
@@ -62,13 +62,13 @@ public struct Frontmatter: Equatable, Sendable {
             }
 
             guard let colon = trimmed.firstIndex(of: ":") else {
-                warning = warning ?? "Ignored a frontmatter line without a colon: \(trimmed)"
+                warning = warning ?? "已忽略一行没有冒号的 frontmatter：\(trimmed)"
                 continue
             }
             let key = String(trimmed[trimmed.startIndex..<colon]).trimmingCharacters(in: .whitespaces)
             let value = String(trimmed[trimmed.index(after: colon)...]).trimmingCharacters(in: .whitespaces)
             guard !key.isEmpty else {
-                warning = warning ?? "Ignored a frontmatter line without a key."
+                warning = warning ?? "已忽略一行没有键名的 frontmatter。"
                 continue
             }
             // `description: >` (or `|`) means the real value is the indented block below.
@@ -84,9 +84,9 @@ public struct Frontmatter: Equatable, Sendable {
         // are the skills' own, and only skills are held to them.
         let structural = warning
         if fields["name"] == nil {
-            warning = warning ?? "The frontmatter is missing the name field."
+            warning = warning ?? "frontmatter 缺少 name 字段。"
         } else if fields["description"] == nil {
-            warning = warning ?? "The frontmatter is missing the description field."
+            warning = warning ?? "frontmatter 缺少 description 字段。"
         }
 
         return Frontmatter(fields: fields, body: body, warning: warning, structuralWarning: structural)

@@ -156,9 +156,9 @@ struct DetailView: View {
                 }
         } else {
             ContentUnavailableView(
-                "Select an item",
+                "选择一项",
                 systemImage: "square.stack.3d.up",
-                description: Text("The list on the left contains everything Claude loads.")
+                description: Text("左侧列表里是 Claude 会加载的所有内容。")
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(V2.window)
@@ -261,7 +261,7 @@ struct DetailView: View {
             tokens: showsBudget(item)
                 ? "~\(item.budget.descriptionTokens) / ~\(Budget.estimatedTokens(characters: Budget.maxDescriptionCharacters)) tok"
                 : nil,
-            lines: showsBudget(item) ? "\(item.budget.bodyLines) / \(Budget.maxBodyLines) lines" : nil,
+            lines: showsBudget(item) ? "\(item.budget.bodyLines) / \(Budget.maxBodyLines) 行" : nil,
             overBudget: item.budget.isOverBudget,
             assistants: showsAssistantMarks(item)
                 ? model.visibleAssistants.filter { item.assistants.contains($0.id) }
@@ -273,8 +273,8 @@ struct DetailView: View {
     /// same window named when there is nothing to count, because "no uses" alone claims more than
     /// the index knows.
     private func summaryUsage(_ item: Item) -> String {
-        guard !item.usage.neverUsed else { return "No uses in \(windowSuffix)" }
-        return "\(uses(item.usage.count)) · \(count(item.usage.projectCount, of: "project"))"
+        guard !item.usage.neverUsed else { return "\(windowSuffix)里未使用" }
+        return "\(uses(item.usage.count)) ·\(count(item.usage.projectCount, of: "个项目"))"
     }
 
     /// The height the document card's body is given: the pane, less what the header and the
@@ -343,14 +343,14 @@ struct DetailView: View {
             // used to mean all 38 or none.
             if item.kind != .plugin {
                 if parentPluginIsOff, let id = item.pluginID {
-                    Button("Open plugin") {
+                    Button("打开插件") {
                         model.selection = .plugins
                         model.selectedPluginID = id
                     }
                     .buttonStyle(.plain)
-                    .help("Open the plugin to turn it back on. Your individual skill choices are kept.")
+                    .help("打开插件，把它重新启用。你对单个技能的开关选择会保留。")
                 }
-                Text(effectivelyEnabled ? "Enabled" : "Disabled")
+                Text(effectivelyEnabled ? "已启用" : "已停用")
                     .font(.system(size: 12.5))
                     .foregroundStyle(V2.textMid)
                     .help(switchHelp(item))
@@ -365,7 +365,7 @@ struct DetailView: View {
     private func subtitle(_ item: Item) -> String {
         var parts = [sourceText(item)]
         if let size = fileSize(item) { parts.append(size) }
-        if let modified = item.modified { parts.append("modified \(Usage.relative(modified))") }
+        if let modified = item.modified { parts.append("修改于 \(Usage.relative(modified))") }
         return parts.joined(separator: " · ")
     }
 
@@ -373,29 +373,46 @@ struct DetailView: View {
     /// says what it is. Named here rather than guessed at: the parts it prints are conditional, so
     /// the tooltip names only the ones that are actually on screen.
     private func subtitleHelp(_ item: Item) -> String {
-        var parts = ["where this \(item.kind.briefingNoun) lives"]
-        if fileSize(item) != nil { parts.append("how big its file is") }
-        if item.modified != nil { parts.append("when that file last changed") }
-        guard parts.count > 1 else { return "Where this \(item.kind.briefingNoun) lives" }
-        let listed = parts.dropLast().joined(separator: ", ") + " and " + parts[parts.count - 1]
-        return listed.prefix(1).uppercased() + listed.dropFirst()
+        var parts = ["\(this(item.kind))存放的位置"]
+        if fileSize(item) != nil { parts.append("文件大小") }
+        if item.modified != nil { parts.append("文件上次修改的时间") }
+        guard parts.count > 1 else { return "\(this(item.kind))存放的位置" }
+        return parts.dropLast().joined(separator: "、") + "和" + parts[parts.count - 1]
+    }
+
+    /// The kind as the interface names it. `briefingNoun` stays English because it is also what the
+    /// assistants are told, so the screen gets its own words here.
+    private func kindNoun(_ kind: ItemKind) -> String {
+        switch kind {
+        case .skill: return "技能"
+        case .command: return "命令"
+        case .agent: return "子代理"
+        case .mcp: return "MCP 服务器"
+        case .plugin: return "插件"
+        }
+    }
+
+    /// "这个技能" / "这个 MCP 服务器": the space before a Latin noun, the way the rest of the UI spaces it.
+    private func this(_ kind: ItemKind) -> String {
+        let noun = kindNoun(kind)
+        return noun.first?.isASCII == true ? "这个 \(noun)" : "这个\(noun)"
     }
 
     /// What turning the one big switch off actually does — which is never delete anything, and is
     /// worth saying, because a switch beside a file is read as one that might.
     private func switchHelp(_ item: Item) -> String {
-        let noun = item.kind.briefingNoun
+        let noun = this(item.kind)
         if item.pluginID != nil, model.pluginIsOff(for: item) {
-            return "Turn on the plugin before changing this \(noun)"
+            return "先启用插件，才能更改\(noun)"
         }
         if item.kind == .mcp {
             return item.enabled
-                ? "Turn off to lift this server out of the assistant's configuration, keeping what it said so you can put it back"
-                : "Turn on to put this server back into the assistant's configuration"
+                ? "关闭后，这个服务器会从助手的配置里移出，原有内容会保留，随时可以放回去"
+                : "打开后，这个服务器会放回助手的配置里"
         }
         return item.enabled
-            ? "Turn off and no assistant loads this \(noun) — its files move aside on disk, so nothing is lost"
-            : "Turn on and assistants load this \(noun) again"
+            ? "关闭后，所有助手都不再加载\(noun)。文件只是在磁盘上挪到一边，不会丢失"
+            : "打开后，助手会重新加载\(noun)"
     }
 
     /// Where to send someone who wants to see this on disk: the folder for a skill, the file's
@@ -410,23 +427,23 @@ struct DetailView: View {
         // "Personal mcp" read like a typo. The kind's own noun — "MCP server" — is the word for it.
         if item.kind == .mcp {
             switch item.origin {
-            case .personal: return "Personal MCP server"
+            case .personal: return "个人 MCP 服务器"
             // Two different things read as "MCP server in loadout": one your own config filed under
             // that project, and one the repository ships for whoever checks it out. Only the second
             // arrives with a pull, so the row says which it is.
             case .project(let name):
                 return item.declaredByRepository
-                    ? "MCP server shipped by \(name)" : "MCP server in \(name)"
-            case .plugin(let name): return "MCP server from the \(name) plugin"
+                    ? "\(name) 自带的 MCP 服务器" : "\(name) 中的 MCP 服务器"
+            case .plugin(let name): return "来自 \(name) 插件的 MCP 服务器"
             }
         }
-        let kind = item.kind.label
+        let kind = kindNoun(item.kind)
         switch item.origin {
-        case .personal: return "Personal \(kind.lowercased())"
-        case .project(let name): return "\(kind) in \(name)"
+        case .personal: return "个人\(kind)"
+        case .project(let name): return "\(name) 中的\(kind)"
         // "Command from codex" read as the Codex assistant, when it is a Claude Code plugin
         // called codex whose whole job is to send work to Codex.
-        case .plugin(let name): return "\(kind) from the \(name) plugin"
+        case .plugin(let name): return "来自 \(name) 插件的\(kind)"
         }
     }
 
@@ -445,13 +462,13 @@ struct DetailView: View {
                 .font(.system(size: 15))
                 .foregroundStyle(copied ? V2.ok : V2.accent)
             VStack(alignment: .leading, spacing: 2) {
-                Text(copied ? "You have your own copy of this" : "Only works inside \(repository)")
+                Text(copied ? "你已经有自己的副本了" : "只在 \(repository) 里生效")
                     .font(.system(size: 12.5, weight: .medium))
                     .foregroundStyle(V2.text)
                 Text(
                     copied
-                        ? "Yours works in every project. This one is \(repository)'s, and the two are separate files."
-                        : "Make a copy of your own and it works in every project. The repository keeps its own, so nobody else loses it."
+                        ? "你的副本在所有项目里都能用。这一份属于 \(repository)，两者是各自独立的文件。"
+                        : "拷贝一份给自己，就能在所有项目里使用。仓库里的那份保持不动，别人不受影响。"
                 )
                 .font(.system(size: 11.5))
                 .foregroundStyle(V2.textMid)
@@ -462,7 +479,7 @@ struct DetailView: View {
                 Button {
                     model.makeGlobal(item)
                 } label: {
-                    Text("Make global")
+                    Text("设为全局")
                         .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(Color.white)
                         .padding(.horizontal, 12)
@@ -470,7 +487,7 @@ struct DetailView: View {
                         .background(V2.accent, in: RoundedRectangle(cornerRadius: 7))
                 }
                 .buttonStyle(.plain)
-                .help("Copy \(item.name) into your own \(item.kind.briefingNoun)s, leaving the repository's copy where it is")
+                .help("把 \(item.name) 拷贝到你自己的\(kindNoun(item.kind))里，仓库里的那份保持不动")
                 .pointingHand()
             }
         }
@@ -498,13 +515,13 @@ struct DetailView: View {
     private func budgetCard(_ item: Item) -> some View {
         V2Card {
             VStack(spacing: 0) {
-                cardHeader { V2CardCaption(text: "Token budget") }
+                cardHeader { V2CardCaption(text: "Token 预算") }
                 // All four limits the budget actually measures, in loading order: the metadata
                 // that is in context in every session, then the body that only arrives on
                 // trigger. Showing two of the four was why this card came up short — of height,
                 // and of the truth.
                 meterRow(
-                    label: "Description",
+                    label: "描述",
                     fraction: Double(item.budget.descriptionCharacters) / Double(Budget.maxDescriptionCharacters),
                     over: item.budget.descriptionCharacters > Budget.maxDescriptionCharacters,
                     value: "~\(item.budget.descriptionTokens) / ~\(Budget.estimatedTokens(characters: Budget.maxDescriptionCharacters)) tok"
@@ -513,23 +530,23 @@ struct DetailView: View {
                 // row was a bar sitting at 0 / 64 for a rule that does not apply (AC10.3).
                 if item.kind == .skill {
                     meterRow(
-                        label: "Name",
+                        label: "名称",
                         fraction: Double(item.budget.nameCharacters) / Double(Budget.maxNameCharacters),
                         over: item.budget.nameCharacters > Budget.maxNameCharacters,
-                        value: "\(item.budget.nameCharacters) / \(Budget.maxNameCharacters) chars"
+                        value: "\(item.budget.nameCharacters) / \(Budget.maxNameCharacters) 字符"
                     )
                 }
                 meterRow(
-                    label: "Body lines",
+                    label: "正文行数",
                     fraction: Double(item.budget.bodyLines) / Double(Budget.maxBodyLines),
                     over: item.budget.bodyLines > Budget.maxBodyLines,
-                    value: "\(item.budget.bodyLines) / \(Budget.maxBodyLines) lines"
+                    value: "\(item.budget.bodyLines) / \(Budget.maxBodyLines) 行"
                 )
                 meterRow(
-                    label: "Body words",
+                    label: "正文词数",
                     fraction: Double(item.budget.bodyWords) / Double(Budget.maxBodyWords),
                     over: item.budget.bodyWords > Budget.maxBodyWords,
-                    value: "\(item.budget.bodyWords) / \(Budget.maxBodyWords) words"
+                    value: "\(item.budget.bodyWords) / \(Budget.maxBodyWords) 词"
                 )
             }
             // Inside the card, so the surface is painted behind the taller frame. Outside it, the
@@ -568,7 +585,7 @@ struct DetailView: View {
     }
 
     private func budgetHelp(_ item: Item) -> String {
-        let base = "The description is in context in every session, used or not. The body only when the skill triggers. Estimated at four characters per token."
+        let base = "描述在每次会话里都占用上下文，不管用没用到。正文只在技能触发时才载入。按每 4 个字符 1 个 token 估算。"
         guard item.budget.isOverBudget else { return base }
         return (item.budget.breaches + [base]).joined(separator: "\n")
     }
@@ -578,20 +595,20 @@ struct DetailView: View {
     private func detailsCard(_ item: Item) -> some View {
         V2Card {
             VStack(spacing: 0) {
-                cardHeader { V2CardCaption(text: "Details") }
+                cardHeader { V2CardCaption(text: "详情") }
                 // The way out of a repository is offered once, in the callout above, where it can
                 // be seen. Twice on one screen is not twice as findable.
-                detailRow(label: "Source", value: sourceText(item), help: sourceHelp(item))
-                detailRow(label: "Usage", value: usageValue(item), help: usesHelp(item))
-                detailRow(label: "Last used", value: lastUsedValue(item), help: lastUsedHelp(item))
+                detailRow(label: "来源", value: sourceText(item), help: sourceHelp(item))
+                detailRow(label: "使用情况", value: usageValue(item), help: usesHelp(item))
+                detailRow(label: "上次使用", value: lastUsedValue(item), help: lastUsedHelp(item))
                 // An MCP server has no file of its own: it is a few lines inside `~/.claude.json`,
                 // and pointing at the directory that file sits in named the home folder, which is
                 // not where anybody would go looking.
                 if let location = locationPath(item) {
                     detailRow(
-                        label: "Location", value: location, mono: true,
-                        action: ("Reveal", { model.revealInFinder() }),
-                        actionHint: "Reveal \(location) in Finder",
+                        label: "位置", value: location, mono: true,
+                        action: ("在访达中显示", { model.revealInFinder() }),
+                        actionHint: "在访达中显示 \(location)",
                         help: locationHelp(item)
                     )
                 }
@@ -623,11 +640,11 @@ struct DetailView: View {
     private func filesRow(_ entries: [String]) -> some View {
         let folders = entries.filter { $0.hasSuffix("/") }.count
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text("Files")
+            Text("文件")
                 .font(.system(size: 12.5))
                 .foregroundStyle(Color.white.opacity(0.5))
                 .frame(width: 74, alignment: .leading)
-                .help("What else sits in this folder, beside the document")
+                .help("这个文件夹里除了文档之外还有什么")
             VStack(alignment: .leading, spacing: filesExpanded ? 8 : 0) {
                 Button {
                     withAnimation(.easeOut(duration: 0.16)) { filesExpanded.toggle() }
@@ -643,7 +660,7 @@ struct DetailView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .help(filesExpanded ? "Hide what is in the folder" : "Show what is in the folder")
+                .help(filesExpanded ? "收起文件夹内容" : "展开文件夹内容")
                 .pointingHand()
 
                 if filesExpanded {
@@ -673,22 +690,22 @@ struct DetailView: View {
     /// "12 items · 3 folders" — the folder count only when there is one, since "0 folders" is a
     /// fact nobody asked for.
     private func filesSummary(_ total: Int, folders: Int) -> String {
-        let items = count(total, of: "item")
-        return folders > 0 ? "\(items) · \(count(folders, of: "folder"))" : items
+        let items = count(total, of: "项")
+        return folders > 0 ? "\(items) · \(count(folders, of: "个文件夹"))" : items
     }
 
     /// The actions whose symbol needs no word beside it. "Reveal" was here and should not have
     /// been: the row beside it is a path, but a lone folder glyph at the far edge is not something
     /// an eye finds — the same mistake this file already records about "Make global".
-    private static let glyphOnlyActions: Set<String> = ["Copy"]
+    private static let glyphOnlyActions: Set<String> = ["拷贝"]
 
     /// The glyph for a row's action. Named after what the action is, so a second action added
     /// later either finds its symbol here or falls back to something honest rather than wrong.
     private func symbol(forAction title: String) -> String {
         switch title {
-        case "Reveal": return "folder"
-        case "Make global": return "arrow.up.right.circle"
-        case "Copy": return "doc.on.doc"
+        case "在访达中显示": return "folder"
+        case "设为全局": return "arrow.up.right.circle"
+        case "拷贝": return "doc.on.doc"
         default: return "arrow.up.forward.app"
         }
     }
@@ -738,34 +755,35 @@ struct DetailView: View {
         .overlay(alignment: .bottom) { Hairline(color: Color.white.opacity(0.06)) }
         // The row's own explanation covers the label and the value; the action keeps the tooltip
         // it already had, since a button has to say what it does rather than what it shows.
-        .help(help ?? "\(label): \(value)")
+        .help(help ?? "\(label)：\(value)")
     }
 
-    /// The chosen window without its article, for reading inside brackets and after "None in".
+    /// The chosen window, for reading inside brackets and before "里未使用". The label is Chinese
+    /// now and has no article to strip, so this is the label as it stands.
     private var windowSuffix: String {
-        model.usageWindowLabel.replacingOccurrences(of: "the ", with: "")
+        model.usageWindowLabel
     }
 
     private func usageValue(_ item: Item) -> String {
         // "Never used" claimed more than the numbers can: they cover the window chosen in Settings
         // › Usage, not all time. So the value says which window it looked at.
-        guard !item.usage.neverUsed else { return "None in \(windowSuffix)" }
-        return "\(uses(item.usage.count)) in \(count(item.usage.projectCount, of: "project"))"
+        guard !item.usage.neverUsed else { return "\(windowSuffix)里未使用" }
+        return "在\(count(item.usage.projectCount, of: "个项目"))中\(uses(item.usage.count))"
     }
 
     /// "1 use" / "4 uses" — the phrase the Details row, the rail's Uses pair and every project
     /// row all print. One spelling, so the same number never reads two ways in one pane.
-    private func uses(_ count: Int) -> String { self.count(count, of: "use") }
+    private func uses(_ count: Int) -> String { "用过 \(count) 次" }
 
     private func count(_ number: Int, of noun: String) -> String {
-        "\(number) \(noun)\(number == 1 ? "" : "s")"
+        "\(number) \(noun)"
     }
 
     private func lastUsedValue(_ item: Item) -> String {
         // The window is a setting, so writing 90 days here said 90 days to somebody who had chosen
         // 30 — the row contradicting the preference that produced it.
         guard item.usage.count > 0, let last = item.usage.lastUsed else {
-            return "— (\(windowSuffix))"
+            return "—（\(windowSuffix)）"
         }
         return Usage.relative(last)
     }
@@ -774,53 +792,53 @@ struct DetailView: View {
     /// thing as never: it can also mean no history Loadout can read covers this one.
     private func lastUsedHelp(_ item: Item) -> String {
         guard item.usage.count > 0, item.usage.lastUsed != nil else {
-            return "Nothing in \(model.usageWindowLabel) proves this ran. Settings › Usage says which histories could be read and which formats prove nothing."
+            return "\(model.usageWindowLabel)里没有记录能证明它运行过。“设置 › 使用情况”里写明了哪些历史记录读得到，哪些格式无法作为证据。"
         }
-        return "The most recent time an assistant fired this \(item.kind.briefingNoun), out of \(model.usageWindowLabel)"
+        return "\(model.usageWindowLabel)里，助手最近一次触发\(this(item.kind))的时间"
     }
 
     /// Where it lives decides where it works, which is the part the words "Personal", "in a
     /// repository" and "from a plugin" leave out.
     private func sourceHelp(_ item: Item) -> String {
-        let noun = item.kind.briefingNoun
+        let noun = this(item.kind)
         switch item.origin {
         case .personal:
-            return "Yours, in your home folder, so every project can load this \(noun)"
+            return "你自己的，放在个人文件夹里，所以每个项目都能加载\(noun)"
         case .project(let name):
             if item.declaredByRepository {
                 return """
-                Committed in \(name), so everyone who checks it out gets it. Switching it off is \
-                recorded in your own settings and changes nothing for anybody else
+                已提交到 \(name)，检出这个仓库的人都会拿到。关闭它只会记在你自己的设置里，\
+                不影响其他人
                 """
             }
-            return "Lives inside \(name), so it loads only while you work in that repository"
+            return "位于 \(name) 内，只有在这个仓库里工作时才会加载"
         case .plugin(let name):
-            return "Comes with the \(name) plugin, so updating the plugin can replace this \(noun)"
+            return "随 \(name) 插件提供，更新插件时可能会替换\(noun)"
         }
     }
 
     /// Whose file the server is a few lines of, and what the switch does there.
     private func serverSentence(_ item: Item) -> String {
         if item.declaredByRepository {
-            return "This server comes from the .mcp.json the repository commits, so everyone who checks it out gets it. Switching it off is recorded in your own settings and changes nothing for anybody else."
+            return "这个服务器来自仓库提交的 .mcp.json，检出这个仓库的人都会拿到。关闭它只会记在你自己的设置里，不影响其他人。"
         }
         switch Mutations.owner(of: item) {
         case "codex":
-            return "This server is defined in ~/.codex/config.toml, not in a separate file. Switching it off sets Codex's own enabled flag. Removing it is done in Codex, with `codex mcp remove`."
+            return "这个服务器定义在 ~/.codex/config.toml 里，没有单独的文件。关闭它会设置 Codex 自己的 enabled 标记。要移除它，请在 Codex 里用 `codex mcp remove`。"
         case "antigravity":
-            return "This server is defined in ~/.gemini/config/mcp_config.json, not in a separate file. Switching it off sets the same disabled flag `agy mcp disable` does."
+            return "这个服务器定义在 ~/.gemini/config/mcp_config.json 里，没有单独的文件。关闭它设置的 disabled 标记和 `agy mcp disable` 设置的是同一个。"
         default:
-            return "This server is defined in ~/.claude.json, not in a separate file."
+            return "这个服务器定义在 ~/.claude.json 里，没有单独的文件。"
         }
     }
 
     private func locationHelp(_ item: Item) -> String {
         if item.kind == .mcp {
-            return "The settings file this server is defined in, a few lines among the assistant's other settings"
+            return "定义这个服务器的设置文件，它只是助手其他设置中间的几行"
         }
         return item.directory == nil
-            ? "The folder on disk the file sits in"
-            : "The folder on disk that holds this \(item.kind.briefingNoun)"
+            ? "文件所在的磁盘文件夹"
+            : "存放\(this(item.kind))的磁盘文件夹"
     }
 
     private func fileSize(_ item: Item) -> String? {
@@ -866,11 +884,11 @@ struct DetailView: View {
             VStack(spacing: 0) {
                 cardHeader {
                     HStack(spacing: 8) {
-                        V2CardCaption(text: "Assistants")
-                        Text("\(loaded) loaded of \(assistants.count)")
+                        V2CardCaption(text: "助手")
+                        Text("已加载 \(loaded) / \(assistants.count)")
                             .font(.system(size: 11))
                             .foregroundStyle(V2.textFaint)
-                            .help("How many of the assistants below have this skill, out of the ones Loadout found on this Mac and Settings keeps in view")
+                            .help("下方助手中有几个装了这个技能。总数是 Loadout 在这台 Mac 上找到、并且在设置里保持显示的助手")
                     }
                 }
                 // Four up is the design's shape, but only while a cell has room for a name and a
@@ -916,7 +934,7 @@ struct DetailView: View {
             // Still reads as loaded — the check is true and worth seeing. Only the removal is
             // gone, dimmed the way a disabled control is.
             assistantRow(assistant, has: has, none: none)
-                .help("Only copy — removing it would delete the skill. Disable it instead.")
+                .help("这是唯一的副本，移除会删掉这个技能。请改为停用。")
                 .opacity(0.55)
                 .spotlight(Spotlight.assistant(assistant.id))
         } else {
@@ -972,19 +990,19 @@ struct DetailView: View {
     private func assistantHelp(_ assistant: Assistant, has: Bool) -> String {
         let count = assistantUsage[assistant.id] ?? 0
         let fired = count > 0
-            ? "\(assistant.label) fired it \(uses(count)) in \(model.usageWindowLabel). "
+            ? "\(assistant.label) 在\(model.usageWindowLabel)里触发过它 \(count) 次。"
             : ""
         if has {
             // The glyph says carried; the tooltip is where "loaded" now lives in words.
-            return "Loaded in \(assistant.label). " + fired
-                + "Click to stop \(assistant.label) from loading this skill."
+            return "已在 \(assistant.label) 中加载。" + fired
+                + "点按可让 \(assistant.label) 不再加载这个技能。"
         }
         if assistant.hasSkillsFolder {
             // The one that reads as a contradiction until it is spelled out: used, not loaded.
-            let past = count > 0 ? "It isn't loaded there now. " : ""
-            return fired + past + "Click to add this skill to \(assistant.label)."
+            let past = count > 0 ? "它现在没有在那里加载。" : ""
+            return fired + past + "点按可把这个技能添加到 \(assistant.label)。"
         }
-        return "\(assistant.label) doesn't have a skills folder yet. Click to create \(assistant.skillsRoot.path) and add this skill."
+        return "\(assistant.label) 还没有技能文件夹。点按会创建 \(assistant.skillsRoot.path) 并添加这个技能。"
     }
 
     // MARK: - Document card
@@ -1032,10 +1050,10 @@ struct DetailView: View {
             // segment — offering Edit there was a control that could only disappoint.
             if item.kind != .mcp {
                 HStack(spacing: 1) {
-                    viewModeTab("Preview", selected: model.showsPreview) { model.showsPreview = true }
+                    viewModeTab("预览", selected: model.showsPreview) { model.showsPreview = true }
                     // The dot is the unsaved marker the design asks for on the Edit segment
                     // itself, so the state is visible even while reading the preview.
-                    viewModeTab(model.isDirty ? "Edit •" : "Edit", selected: !model.showsPreview) {
+                    viewModeTab(model.isDirty ? "编辑 •" : "编辑", selected: !model.showsPreview) {
                         model.showsPreview = false
                     }
                 }
@@ -1062,23 +1080,23 @@ struct DetailView: View {
             // The one destructive thing a server has. It is here rather than only in the row's
             // context menu because a menu nobody opens is not where a person looks for it.
             if model.canRemove(item) {
-                Button("Remove") { model.isConfirmingDelete = true }
+                Button("移除") { model.isConfirmingDelete = true }
                     .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                    .help("Take this server out of the assistant's settings. There is no Trash for it, so Loadout copies the file to its backups first")
+                    .help("把这个服务器从助手的设置里拿掉。它没有废纸篓可去，所以 Loadout 会先把文件拷贝到备份里")
                     .pointingHand()
             }
 
             if item.isEditable {
-                Button("Revert") { model.revert() }
+                Button("复原") { model.revert() }
                     .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: model.isDirty))
                     .disabled(!model.isDirty)
-                    .help("Throw away the unsaved changes and reload the file from disk")
+                    .help("丢弃未保存的更改，从磁盘重新载入文件")
                     .pointingHand(enabled: model.isDirty)
                 Button {
                     model.save()
                 } label: {
                     HStack(spacing: 6) {
-                        Text("Save")
+                        Text("保存")
                         if shortcut {
                             Text("⌘S")
                                 .font(.system(size: 11))
@@ -1089,7 +1107,7 @@ struct DetailView: View {
                 .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: model.isDirty))
                 .disabled(!model.isDirty)
                 .keyboardShortcut("s", modifiers: .command)
-                .help("Write your changes to the file on disk (⌘S)")
+                .help("把你的更改写入磁盘上的文件（⌘S）")
                 .pointingHand(enabled: model.isDirty)
             }
         }
@@ -1099,7 +1117,7 @@ struct DetailView: View {
 
     private func viewModeTab(_ name: String, selected: Bool, action: @escaping () -> Void) -> some View {
         V2SegmentTab(label: name, selected: selected, action: action)
-            .help(name.hasPrefix("Preview") ? "Read the document as rendered Markdown" : "Edit the raw file")
+            .help(name.hasPrefix("预览") ? "以渲染后的 Markdown 阅读文档" : "编辑原始文件")
     }
 
     /// The body's line count against the documented limit, always in view while editing —
@@ -1110,7 +1128,7 @@ struct DetailView: View {
         return HStack(spacing: 5) {
             Image(systemName: "clock")
                 .font(.system(size: 10))
-            Text("\(item.budget.bodyLines) / \(Budget.maxBodyLines) lines")
+            Text("\(item.budget.bodyLines) / \(Budget.maxBodyLines) 行")
                 .monospacedDigit()
         }
         .font(.system(size: 11.5))
@@ -1127,7 +1145,7 @@ struct DetailView: View {
     private var readerButton: some View {
         Button("Aa") { readerPopoverOpen.toggle() }
             .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-            .help("Reading size, typeface and background")
+            .help("阅读字号、字体和背景")
             .pointingHand()
             .popover(isPresented: $readerPopoverOpen, arrowEdge: .bottom) {
                 readerPopover
@@ -1163,14 +1181,14 @@ struct DetailView: View {
                     .frame(width: 36, alignment: .trailing)
             }
             readerSegments(
-                options: [("system", "System"), ("serif", "Serif"), ("mono", "Mono")],
+                options: [("system", "系统"), ("serif", "衬线"), ("mono", "等宽")],
                 selection: $readerFont,
-                help: "The typeface the document is read in"
+                help: "阅读文档所用的字体"
             )
             readerSegments(
-                options: [("dark", "Dark"), ("darker", "Darker"), ("ink", "Ink")],
+                options: [("dark", "暗"), ("darker", "更暗"), ("ink", "墨黑")],
                 selection: $readerBackground,
-                help: "How dark the page behind the text is, Ink being the darkest"
+                help: "文字背后纸面的深浅，“墨黑”最深"
             )
         }
         .padding(12)
@@ -1207,7 +1225,7 @@ struct DetailView: View {
             Button {} label: { askLabel }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: false))
                 .disabled(true)
-                .help("Looks for \(AssistantCLIRegistry.chatCapableLabels.joined(separator: " or ")) on your PATH — neither is installed.")
+                .help("会在 PATH 里查找 \(AssistantCLIRegistry.chatCapableLabels.joined(separator: " 或 "))，但都没有安装。")
         } else if let only = clis.count == 1 ? clis.first : nil {
             Button { model.askAssistant(only) } label: { askLabel }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
@@ -1230,7 +1248,7 @@ struct DetailView: View {
             .frame(height: 24)
             .background(V2.button, in: RoundedRectangle(cornerRadius: 7))
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
-            .help("Ask an assistant about this skill. Nothing is written until you accept a change and save.")
+            .help("就这个技能向助手提问。在你接受更改并保存之前，不会写入任何内容。")
             .pointingHand()
         }
     }
@@ -1239,8 +1257,8 @@ struct DetailView: View {
     /// conversation can change the file once you accept a change, and the one-shot sheet cannot.
     private func askHelp(_ cli: AssistantCLI) -> String {
         AskModel.canChat(cli)
-            ? "Talk to \(cli.label) about this skill, beside the document. It works in a copy of the folder, so your file changes only when you accept a change and save."
-            : "Ask \(cli.label) one question about this skill. It answers as text and writes nothing."
+            ? "在文档旁边和 \(cli.label) 聊聊这个技能。它在文件夹的副本里工作，只有你接受更改并保存后，你的文件才会变。"
+            : "就这个技能向 \(cli.label) 问一个问题。它只用文字回答，不写入任何内容。"
     }
 
     private var askLabel: some View {
@@ -1248,7 +1266,7 @@ struct DetailView: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 11))
                 .foregroundStyle(V2.link)
-            Text("Ask")
+            Text("提问")
                 .font(.system(size: 12))
         }
     }
@@ -1298,7 +1316,7 @@ struct DetailView: View {
             }
         } else {
             VStack(alignment: .leading, spacing: 8) {
-                Label("This comes from a plugin, so it's read-only.", systemImage: "lock")
+                Label("这来自插件，所以是只读的。", systemImage: "lock")
                     .font(.system(size: 11))
                     .foregroundStyle(V2.textDim)
                 ScrollView {
@@ -1323,18 +1341,18 @@ struct DetailView: View {
                 .font(.system(size: 10))
                 .foregroundStyle(V2.link)
             Text(model.ask.pendingCount == 1
-                 ? "1 proposed change — accept or reject it to keep editing"
-                 : "\(model.ask.pendingCount) proposed changes — decide them to keep editing")
+                 ? "有 1 处建议的更改，接受或拒绝后才能继续编辑"
+                 : "有 \(model.ask.pendingCount) 处建议的更改，全部处理后才能继续编辑")
                 .font(.system(size: 11))
                 .foregroundStyle(V2.text)
             Spacer(minLength: 6)
-            Button("Accept all") { model.acceptAllReviewChanges() }
+            Button("全部接受") { model.acceptAllReviewChanges() }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: true))
-                .help("Take every proposed change into the document (you still have to save)")
+                .help("把所有建议的更改写进文档（之后仍需保存）")
                 .pointingHand()
-            Button("Reject all") { model.rejectAllReviewChanges() }
+            Button("全部拒绝") { model.rejectAllReviewChanges() }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                .help("Drop every proposed change and leave the file as it is")
+                .help("丢弃所有建议的更改，文件保持原样")
                 .pointingHand()
         }
         .padding(.horizontal, 10)
@@ -1345,13 +1363,13 @@ struct DetailView: View {
 
     private func reviewControls(block: Int) -> some View {
         HStack(spacing: 4) {
-            Button("Reject") { model.rejectReviewChange(block) }
+            Button("拒绝") { model.rejectReviewChange(block) }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                .help("Leave the file as it is here")
+                .help("这一处保持原样")
                 .pointingHand()
-            Button("Accept") { model.acceptReviewChange(block) }
+            Button("接受") { model.acceptReviewChange(block) }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: true))
-                .help("Take this change into the document (you still have to save)")
+                .help("把这处更改写进文档（之后仍需保存）")
                 .pointingHand()
         }
         .padding(3)
@@ -1560,7 +1578,7 @@ struct DetailView: View {
 
     private var railOnThisPage: some View {
         VStack(alignment: .leading, spacing: 7) {
-            V2CardCaption(text: "On this page", size: 10.5, weight: .medium, color: V2.textFaint)
+            V2CardCaption(text: "本页内容", size: 10.5, weight: .medium, color: V2.textFaint)
             ForEach(headings) { heading in
                 railHeadingRow(heading)
             }
@@ -1603,14 +1621,14 @@ struct DetailView: View {
     private func railMetadata(_ item: Item) -> some View {
         VStack(alignment: .leading, spacing: 7) {
             railPair(
-                "Modified", item.modified.map { Usage.relative($0) } ?? "—",
-                help: "When the file on disk last changed"
+                "修改时间", item.modified.map { Usage.relative($0) } ?? "—",
+                help: "磁盘上的文件上次修改的时间"
             )
             railPair(
-                "Uses", item.usage.neverUsed ? "None in \(windowSuffix)" : uses(item.usage.count),
+                "使用", item.usage.neverUsed ? "\(windowSuffix)里未使用" : uses(item.usage.count),
                 help: usesHelp(item)
             )
-            railPair("Source", sourceText(item), help: sourceHelp(item))
+            railPair("来源", sourceText(item), help: sourceHelp(item))
         }
     }
 
@@ -1619,22 +1637,22 @@ struct DetailView: View {
     private func usesHelp(_ item: Item) -> String {
         let assistants = model.countedAssistantLabels
         let counted = assistants.count > 1
-            ? assistants.dropLast().joined(separator: ", ") + " and " + assistants[assistants.count - 1]
+            ? assistants.dropLast().joined(separator: "、") + " 和 " + assistants[assistants.count - 1]
             : assistants.joined()
-        let scope = "Counts proven activations by \(counted), in \(model.usageWindowLabel)."
+        let scope = "统计的是\(model.usageWindowLabel)里 \(counted) 有据可查的触发次数。"
 
         guard !item.usage.neverUsed else {
-            return scope + " This one has none — check Settings › Usage for which histories could be read."
+            return scope + "这一项没有记录。可以在“设置 › 使用情况”里查看哪些历史记录读得到。"
         }
         let ordered = assistantUsage.sorted { left, right in
             left.value == right.value ? left.key < right.key : left.value > right.value
         }
         let breakdown = ordered.map { entry -> String in
             let label = model.assistants.first { $0.id == entry.key }?.label ?? entry.key
-            return "\(label): \(entry.value)"
-        }.joined(separator: ", ")
-        let where_ = breakdown.isEmpty ? "" : " — \(breakdown)."
-        return "\(uses(item.usage.count)) in \(count(item.usage.projectCount, of: "project"))\(where_) \(scope)"
+            return "\(label)：\(entry.value)"
+        }.joined(separator: "，")
+        let where_ = breakdown.isEmpty ? "" : "（\(breakdown)）"
+        return "在 \(count(item.usage.projectCount, of: "个项目"))中\(uses(item.usage.count))\(where_)。\(scope)"
     }
 
     private func railPair(_ label: String, _ value: String, help: String? = nil) -> some View {
@@ -1650,20 +1668,20 @@ struct DetailView: View {
                 .truncationMode(.tail)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .help(help ?? "\(label): \(value)")
+        .help(help ?? "\(label)：\(value)")
     }
 
     // MARK: Used in
 
     private func railUsedIn(_ item: Item) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            V2CardCaption(text: "Used in", size: 10.5, weight: .medium, color: V2.textFaint)
-                .help("The projects this fired in, busiest first, over \(model.usageWindowLabel)")
+            V2CardCaption(text: "用过它的项目", size: 10.5, weight: .medium, color: V2.textFaint)
+                .help("\(model.usageWindowLabel)里触发过它的项目，按次数从多到少排列")
             if projectUsage.isEmpty {
-                Text("No recorded uses")
+                Text("没有使用记录")
                     .font(.system(size: 11.5))
                     .foregroundStyle(Color.white.opacity(0.35))
-                    .help("No project in \(model.usageWindowLabel) has a record of this running. Settings › Usage says which histories could be read and which formats prove nothing.")
+                    .help("\(model.usageWindowLabel)里没有哪个项目记录到它运行过。“设置 › 使用情况”里写明了哪些历史记录读得到，哪些格式无法作为证据。")
             } else {
                 ForEach(projectUsage) { usage in
                     railProjectRow(usage)
@@ -1671,11 +1689,11 @@ struct DetailView: View {
                 // The Details card in this same pane says "in N projects", so a silently
                 // truncated list reads as a contradiction rather than as a top eight.
                 if item.usage.projectCount > projectUsage.count {
-                    Text("+\(item.usage.projectCount - projectUsage.count) more")
+                    Text("还有 \(item.usage.projectCount - projectUsage.count) 个")
                         .font(.system(size: 11.5))
                         .foregroundStyle(Color.white.opacity(0.35))
                         .padding(.leading, 19)
-                        .help("The list stops at the eight projects that used it most")
+                        .help("列表只显示用得最多的 8 个项目")
                 }
             }
         }
@@ -1697,7 +1715,7 @@ struct DetailView: View {
                 .monospacedDigit()
                 .foregroundStyle(V2.textFaint)
         }
-        .help("\(uses(usage.count)) in \(usage.project), over \(model.usageWindowLabel)")
+        .help("\(model.usageWindowLabel)里，在 \(usage.project) 中\(uses(usage.count))")
     }
 
     /// The design's editor footer: where the caret is, how big the buffer is, whether it is
@@ -1705,26 +1723,26 @@ struct DetailView: View {
     private func editorStatusBar(_ item: Item) -> some View {
         let liveBudget = Budget.measure(document: model.draft)
         return HStack(spacing: 14) {
-            Text("Ln \(editorState.line), Col \(editorState.column)")
-                .help("Where the cursor is — line, then column")
-            Text("\(model.draft.components(separatedBy: "\n").count) lines")
-                .help("Lines in the whole file, frontmatter included. The budget counts only the body, so its number is smaller.")
+            Text("第 \(editorState.line) 行，第 \(editorState.column) 列")
+                .help("光标位置：先行后列")
+            Text("\(model.draft.components(separatedBy: "\n").count) 行")
+                .help("整个文件的行数，包括 Frontmatter。预算只算正文，所以那边的数字会小一些。")
             Text("Markdown")
             Text("UTF-8")
             Spacer()
             if !editorState.issues.isEmpty {
-                Text("\(editorState.issues.count) \(editorState.issues.count == 1 ? "issue" : "issues")")
+                Text("\(editorState.issues.count) 个问题")
                     .foregroundStyle(V2.issue)
                     .help(editorState.issues.map(\.message).joined(separator: "\n"))
             }
-            Text("~\(liveBudget.descriptionTokens) tok desc · \(liveBudget.bodyLines)/\(Budget.maxBodyLines) lines")
+            Text("描述 ~\(liveBudget.descriptionTokens) tok · 正文 \(liveBudget.bodyLines)/\(Budget.maxBodyLines) 行")
                 .foregroundStyle(liveBudget.isOverBudget ? V2.amber : V2.textDim)
-                .help("Measured on what is in the editor now, not on the saved file: the description's tokens, and body lines against the recommended limit")
-            Text(model.isDirty ? "Edited" : "Saved")
+                .help("按编辑器里当前的内容计算，而不是已保存的文件：描述的 token 数，以及正文行数与建议上限的对比")
+            Text(model.isDirty ? "已编辑" : "已保存")
                 .foregroundStyle(model.isDirty ? V2.amber : V2.textDim)
                 .help(model.isDirty
-                      ? "The editor holds changes that are not in the file yet"
-                      : "The file on disk matches what is in the editor")
+                      ? "编辑器里有尚未写入文件的更改"
+                      : "磁盘上的文件和编辑器里的内容一致")
         }
         .font(.system(size: 11))
         .monospacedDigit()

@@ -30,7 +30,7 @@ struct NewSkillSheet: View {
     /// same refusal to overwrite. Only the words and the file written change.
     private var makesCommand: Bool { model.selection == .commands }
     private var makesAgent: Bool { model.selection == .agents }
-    private var noun: String { makesAgent ? "subagent" : (makesCommand ? "command" : "skill") }
+    private var noun: String { makesAgent ? "子代理" : (makesCommand ? "命令" : "技能") }
 
     /// The assistants that can be asked. Empty is a real state on a fresh Mac, and the sheet
     /// changes shape for it rather than showing a button that can only apologise.
@@ -44,7 +44,7 @@ struct NewSkillSheet: View {
             VStack(alignment: .leading, spacing: 16) {
                 heading
                 field(
-                    label: "Name",
+                    label: "名称",
                     hint: nameHint,
                     bad: !name.isEmpty && !isNameValid
                 ) { nameInput }
@@ -76,7 +76,7 @@ struct NewSkillSheet: View {
     /// after the fact, in the Details card.
     private var heading: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text("New \(noun)")
+            Text("新建\(noun)")
                 .font(.system(size: 16, weight: .semibold))
                 .tracking(-0.2)
             Text(subtitle)
@@ -86,9 +86,9 @@ struct NewSkillSheet: View {
     }
 
     private var subtitle: String {
-        if makesCommand { return "You run it by typing its name — it never triggers on its own" }
-        if makesAgent { return "Handed work by name, when the assistant decides to delegate" }
-        return "Personal skill · loaded in every project"
+        if makesCommand { return "输入名字才会运行，它不会自己触发" }
+        if makesAgent { return "助手决定分派时，会按名字把活交给它" }
+        return "个人技能 · 在每个项目中加载"
     }
 
     // MARK: - Fields
@@ -103,7 +103,7 @@ struct NewSkillSheet: View {
                     .font(.system(size: 12))
                     .foregroundStyle(Color.white.opacity(0.60))
                 if optional {
-                    Text("optional")
+                    Text("可选")
                         .font(.system(size: 11))
                         .foregroundStyle(V2.textFaint)
                 }
@@ -132,7 +132,7 @@ struct NewSkillSheet: View {
                     .font(.system(size: 13, design: .monospaced))
                     .foregroundStyle(Color.white.opacity(0.38))
             }
-            TextField("\(noun)-name".replacingOccurrences(of: "subagent", with: "agent"), text: $name)
+            TextField(makesAgent ? "agent-name" : (makesCommand ? "command-name" : "skill-name"), text: $name)
                 .textFieldStyle(.plain)
                 .font(.system(size: 13, design: .monospaced))
                 .focused($focus, equals: .name)
@@ -178,49 +178,50 @@ struct NewSkillSheet: View {
     private var briefLabel: String {
         // With nobody to sharpen it, the field goes back to being the description it will really be,
         // and the advice for writing one comes back with it.
-        guard assistant != nil else { return "Description" }
-        if makesCommand { return "What should happen when you run it?" }
-        if makesAgent { return "What should this subagent be good at?" }
-        return "What do you want this skill to do?"
+        guard assistant != nil else { return "描述" }
+        if makesCommand { return "运行它时应该做什么？" }
+        if makesAgent { return "这个子代理应该擅长什么？" }
+        return "你想让这个技能做什么？"
     }
 
     /// Never the label again. A placeholder repeating the words directly above it wastes the one
     /// chance to show what a good answer looks like.
     private var briefPlaceholder: String {
-        if makesCommand { return "Read the merged PRs since the last tag and post the notes" }
-        if makesAgent { return "Reviewing SQL migrations for locking and rollback" }
-        return "Turn merged pull requests into release notes, and skip refactors"
+        if makesCommand { return "读取上一个 tag 之后合并的 PR，然后发布说明" }
+        if makesAgent { return "审查 SQL 迁移里的锁表和回滚问题" }
+        return "把合并的 pull request 整理成发布说明，跳过重构"
     }
 
     private var briefHint: String {
         guard let assistant else {
-            return "Say when to use it, not what it is — this is what the assistant reads when choosing."
+            return "写清楚什么时候该用它，而不是它是什么。助手挑选时读的就是这段。"
         }
         // Named when there is one, because the button names it too and repeating it costs nothing.
         // "The assistant" when there are several, since the choice is not made until the button.
         // Lowercase, because every use of it here is mid-sentence: "and The assistant asks you"
         // is the kind of seam that makes copy look generated.
-        let who = clis.count == 1 ? assistant.label : "the assistant"
+        // The trailing space only on the English name, so "Claude Code 会" and "助手会" both read right.
+        let who = clis.count == 1 ? "\(assistant.label) " : "助手"
         if brief.trimmingCharacters(in: .whitespaces).isEmpty {
-            return "Leave it blank and \(who) asks you a few questions first, instead of guessing."
+            return "留空的话，\(who)会先问你几个问题，而不是瞎猜。"
         }
         if makesCommand {
-            return "\(who) writes the prompt the command runs. Say what it should do, and what "
-                + "arguments it takes."
+            return "\(who)会写出这条命令要运行的提示词。说清楚它该做什么、"
+                + "接受哪些参数。"
         }
-        return "\(who) turns this into a description that triggers at the right moments, and writes "
-            + "the body. Plain sentences are enough."
+        return "\(who)会把这段话改写成能在恰当时机触发的描述，并写好"
+            + "正文。用平常的话写就够了。"
     }
 
     private var nameHint: String {
         if name.isEmpty {
-            return "Lowercase letters, numbers and hyphens. This becomes the "
-                + (makesCommand ? "name you type after the slash." : (makesAgent ? "file name." : "folder name."))
+            return "只能用小写字母、数字和连字符。"
+                + (makesCommand ? "这就是你在斜杠后输入的名字。" : (makesAgent ? "它会成为文件名。" : "它会成为文件夹名。"))
         }
         guard isNameValid else {
             // The fixed form, spelled out: telling somebody the rule and letting them apply it is
             // more work than showing them the answer.
-            return "No spaces or capitals. Try \(suggestedName)."
+            return "不能有空格或大写字母。试试 \(suggestedName)。"
         }
         if makesAgent {
             return model.context.map { "\($0.name)/.claude/agents/\(name).md" }
@@ -248,18 +249,18 @@ struct NewSkillSheet: View {
                 .foregroundStyle(V2.textMid)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 2) {
-                Text("No coding assistant found on this Mac, so nothing can write it for you.")
+                Text("这台 Mac 上没找到编程助手，所以没有谁能替你写。")
                 HStack(spacing: 4) {
-                    Button("Assistants") {
+                    Button("助手设置") {
                         model.settingsSection = "assistants"
                         model.showsSettings = true
                         dismiss()
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(V2.link)
-                    .help("Open Settings, where the assistants Loadout looks for are listed")
+                    .help("打开设置，查看 Loadout 会查找哪些助手")
                     .pointingHand()
-                    Text("lists the ones Loadout looks for.")
+                    Text("里列出了 Loadout 会查找的助手。")
                 }
             }
             .font(.system(size: 11.5))
@@ -282,27 +283,27 @@ struct NewSkillSheet: View {
 
     private var footer: some View {
         HStack(spacing: 10) {
-            Button("Cancel") { dismiss() }
+            Button("取消") { dismiss() }
                 .buttonStyle(SheetButtonStyle(kind: .quiet, enabled: true))
                 .keyboardShortcut(.cancelAction)
-                .help("Close without creating a \(noun)")
+                .help("关闭，不创建\(noun)")
                 .pointingHand()
 
             Spacer(minLength: 12)
 
             if assistant == nil {
                 // Nothing to contrast against, so "empty" would only sound like a lesser choice.
-                Button { createOnly() } label: { primaryLabel(text: "Create \(noun)", badge: nil) }
+                Button { createOnly() } label: { primaryLabel(text: "创建\(noun)", badge: nil) }
                     .buttonStyle(SheetButtonStyle(kind: .primary, enabled: isNameValid))
                     .disabled(!isNameValid)
                     .keyboardShortcut(.defaultAction)
-                    .help("Create the \(noun) and open it for editing")
+                    .help("创建\(noun)并打开编辑")
                     .pointingHand(enabled: isNameValid)
             } else {
-                Button("Create empty") { createOnly() }
+                Button("创建空白") { createOnly() }
                     .buttonStyle(SheetButtonStyle(kind: .quiet, enabled: isNameValid))
                     .disabled(!isNameValid)
-                    .help("Just make the \(noun) and open it, with nothing written")
+                    .help("只创建\(noun)并打开，什么都不写")
                     .pointingHand(enabled: isNameValid)
                 assistantAction
             }
@@ -322,14 +323,14 @@ struct NewSkillSheet: View {
         if let assistant {
             HStack(spacing: 0) {
                 Button { createAndAsk(assistant) } label: {
-                    primaryLabel(text: "Write it with \(assistant.label)", badge: assistant)
+                    primaryLabel(text: "用 \(assistant.label) 编写", badge: assistant)
                 }
                 .buttonStyle(SheetButtonStyle(
                     kind: .primary, enabled: isNameValid, rightSquare: clis.count > 1
                 ))
                 .disabled(!isNameValid)
                 .keyboardShortcut(.defaultAction)
-                .help("Create the \(noun), then have \(assistant.label) write it for you to accept")
+                .help("创建\(noun)，再让 \(assistant.label) 写好内容，由你决定是否采纳")
                 .pointingHand(enabled: isNameValid)
 
                 if clis.count > 1 {
@@ -341,7 +342,7 @@ struct NewSkillSheet: View {
                     }
                     .buttonStyle(SheetButtonStyle(kind: .primaryTrailing, enabled: isNameValid))
                     .disabled(!isNameValid)
-                    .help("Choose which assistant writes it")
+                    .help("选择由哪个助手来写")
                     .pointingHand(enabled: isNameValid)
                     .popover(isPresented: $pickerOpen, arrowEdge: .bottom) { assistantMenu }
                 }
@@ -384,7 +385,7 @@ struct NewSkillSheet: View {
 
     private var assistantMenu: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("WRITE IT WITH")
+            Text("用谁来写")
                 .font(.system(size: 10, weight: .semibold))
                 .tracking(0.6)
                 .foregroundStyle(V2.textFaint)
@@ -425,7 +426,7 @@ struct NewSkillSheet: View {
             }
 
             Hairline(color: V2.hairline).padding(.vertical, 4)
-            Text("Remembers your last choice.")
+            Text("会记住你上次的选择。")
                 .font(.system(size: 11.5))
                 .foregroundStyle(V2.textFaint)
                 .padding(.horizontal, 9)
@@ -535,7 +536,7 @@ struct CopilotSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Ask \(cli.label)")
+            Text("向 \(cli.label) 提问")
                 .font(.title3.weight(.semibold))
             Text(subtitle)
                 .font(.caption)
@@ -554,7 +555,7 @@ struct CopilotSheet: View {
             }
 
             ScrollView {
-                Text(answer.isEmpty ? "The answer appears here. Nothing is written until you decide." : answer)
+                Text(answer.isEmpty ? "回答会显示在这里。你决定之前，什么都不会写入。" : answer)
                     .font(.system(size: 12, design: answer.isEmpty ? .default : .monospaced))
                     .foregroundStyle(answer.isEmpty ? .secondary : .primary)
                     .textSelection(.enabled)
@@ -567,31 +568,31 @@ struct CopilotSheet: View {
             HStack {
                 if running { ProgressView().controlSize(.small) }
                 Spacer()
-                Button("Close") {
+                Button("关闭") {
                     model.copilot.cancel()
                     dismiss()
                 }
-                .help("Close without saving anything")
+                .help("关闭，不保存任何内容")
                 .pointingHand()
                 if running {
-                    Button("Cancel") { model.copilot.cancel() }
-                        .help("Stop the running request to \(cli.label)")
+                    Button("取消") { model.copilot.cancel() }
+                        .help("停止正在发给 \(cli.label) 的请求")
                         .pointingHand()
                 } else {
-                    Button("Ask") { ask() }
+                    Button("提问") { ask() }
                         .keyboardShortcut(.defaultAction)
                         .disabled(prompt.trimmingCharacters(in: .whitespaces).isEmpty)
-                        .help("Run \(cli.invocationDescription) with this prompt in the skill's folder (⌘↵)")
+                        .help("在技能文件夹中用这段提示运行 \(cli.invocationDescription)（⌘↵）")
                         .pointingHand(
                             enabled: !prompt.trimmingCharacters(in: .whitespaces).isEmpty
                         )
                 }
-                Button("Copy answer") {
+                Button("拷贝回答") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(answer, forType: .string)
                 }
                 .disabled(answer.isEmpty)
-                .help("Copy \(cli.label)'s answer to the clipboard")
+                .help("将 \(cli.label) 的回答拷贝到剪贴板")
                 .pointingHand(enabled: !answer.isEmpty)
             }
         }
@@ -601,7 +602,7 @@ struct CopilotSheet: View {
 
     private var subtitle: String {
         guard let item = model.selected else { return "" }
-        return "Runs \(cli.invocationDescription) in the \(item.name) folder."
+        return "在 \(item.name) 文件夹中运行 \(cli.invocationDescription)。"
     }
 
     private func ask() {
@@ -620,7 +621,7 @@ struct CopilotSheet: View {
                 let result = try copilot.run(cli: target, prompt: question, in: directory)
                 await MainActor.run {
                     answer = result.output
-                    failure = result.timedOut ? "The request timed out and was stopped." : nil
+                    failure = result.timedOut ? "请求超时，已停止。" : nil
                     running = false
                 }
             } catch {
@@ -655,31 +656,31 @@ struct AssistantCLIFormSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(editing == nil ? "Add an assistant CLI" : "Edit assistant CLI")
+            Text(editing == nil ? "添加助手 CLI" : "编辑助手 CLI")
                 .font(.title3.weight(.semibold))
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Name").font(.caption).foregroundStyle(.secondary)
+                Text("名称").font(.caption).foregroundStyle(.secondary)
                 TextField("Gemini", text: $name)
                     .textFieldStyle(.roundedBorder)
             }
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Command").font(.caption).foregroundStyle(.secondary)
+                Text("命令").font(.caption).foregroundStyle(.secondary)
                 HStack {
                     TextField("/usr/local/bin/gemini", text: $path)
                         .textFieldStyle(.roundedBorder)
-                    Button("Choose…") { choosePath() }
-                        .help("Find the assistant's program on this Mac, instead of typing where it is")
+                    Button("选择…") { choosePath() }
+                        .help("在这台 Mac 上找到助手程序，不用手动输入路径")
                         .pointingHand()
                 }
             }
 
             VStack(alignment: .leading, spacing: 5) {
-                Text("Arguments").font(.caption).foregroundStyle(.secondary)
+                Text("参数").font(.caption).foregroundStyle(.secondary)
                 TextField("-p {prompt}", text: $template)
                     .textFieldStyle(.roundedBorder)
-                Text("Use {prompt} where the question goes, e.g. \"-p {prompt}\" or \"exec {prompt}\".")
+                Text("在问题要放的位置写 {prompt}，例如“-p {prompt}”或“exec {prompt}”。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -692,16 +693,16 @@ struct AssistantCLIFormSheet: View {
 
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("取消") { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                    .help("Close without keeping what you typed here")
+                    .help("关闭，不保留这里输入的内容")
                     .pointingHand()
-                Button(editing == nil ? "Add" : "Save") { save() }
+                Button(editing == nil ? "添加" : "保存") { save() }
                     .keyboardShortcut(.defaultAction)
                     .help(
                         editing == nil
-                            ? "Add this to the assistants you can ask about a skill"
-                            : "Keep these changes to how this assistant is run"
+                            ? "把它加到可以就技能提问的助手里"
+                            : "保存对这个助手运行方式的修改"
                     )
                     .pointingHand()
             }
@@ -717,7 +718,7 @@ struct AssistantCLIFormSheet: View {
         panel.allowsMultipleSelection = false
         panel.treatsFilePackagesAsDirectories = false
         panel.allowedContentTypes = [.unixExecutable]
-        panel.title = "Choose the assistant's executable"
+        panel.title = "选择助手的可执行文件"
         if panel.runModal() == .OK, let url = panel.url {
             path = url.path
         }
@@ -748,13 +749,13 @@ struct RestoreSkillSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Enable \(model.restoring?.item.name ?? "")")
+            Text("启用 \(model.restoring?.item.name ?? "")")
                 .font(.title3.weight(.semibold))
 
             Text(
                 model.restoring?.remembered == true
-                    ? "These are the assistants that were loading it when you switched it off."
-                    : "Loadout couldn't tell where this skill used to load, so it proposes where it is parked."
+                    ? "你停用它的时候，是这些助手在加载它。"
+                    : "Loadout 判断不出这个技能以前在哪里加载，所以先按它现在停放的位置来建议。"
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -763,30 +764,30 @@ struct RestoreSkillSheet: View {
                 ForEach(model.visibleAssistants) { assistant in
                     Toggle(assistant.label, isOn: binding(for: assistant))
                         .toggleStyle(.checkbox)
-                        .help("Ticked means \(assistant.label) loads this skill again")
+                        .help("勾选后，\(assistant.label) 会重新加载这个技能")
                         .pointingHand()
                 }
             }
 
             Text(chosenCount > 1
-                ? "The folder goes to ~/.agents/skills, and each one gets a link to it — one copy, one edit."
-                : "The folder goes straight into that assistant, with no link left anywhere else.")
+                ? "文件夹放到 ~/.agents/skills，每个助手各有一个指向它的链接。只有一份，改一处就行。"
+                : "文件夹直接放进那个助手，其他地方不留链接。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
             HStack {
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("取消") { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                    .help("Leave the skill switched off")
+                    .help("让技能保持停用")
                     .pointingHand()
-                Button("Enable") {
+                Button("启用") {
                     model.confirmRestore()
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(chosenCount == 0)
-                .help("Put the skill back into the assistants ticked above")
+                .help("把技能放回上面勾选的助手")
                 .pointingHand(enabled: chosenCount > 0)
             }
         }
@@ -848,17 +849,17 @@ struct RemovePluginSheet: View {
             HStack {
                 Spacer()
                 if done {
-                    Button("Done") { close() }
+                    Button("完成") { close() }
                         .keyboardShortcut(.defaultAction)
                         .pointingHand()
                 } else {
-                    Button("Cancel") { close() }
+                    Button("取消") { close() }
                         .keyboardShortcut(.cancelAction)
-                        .help("Leave the plugin installed")
+                        .help("保留这个插件")
                         .pointingHand()
-                    Button("Move to Trash") { model.confirmRemovePlugin() }
+                    Button("移到废纸篓") { model.confirmRemovePlugin() }
                         .keyboardShortcut(.defaultAction)
-                        .help("Uninstall it: folder to the Trash, entry out of Claude Code's register")
+                        .help("卸载它：文件夹移到废纸篓，条目从 Claude Code 的登记表中移除")
                         .pointingHand()
                 }
             }
@@ -873,9 +874,9 @@ struct RemovePluginSheet: View {
     }
 
     private var title: String {
-        if model.pluginRemovalError != nil { return "Couldn't finish removing it" }
-        if model.pluginRemovalDone { return "It's out" }
-        return "Remove the \(plugin?.name ?? "") plugin?"
+        if model.pluginRemovalError != nil { return "没能移除干净" }
+        if model.pluginRemovalDone { return "已经移除" }
+        return "移除 \(plugin?.name ?? "") 插件？"
     }
 
     private var message: String {
@@ -883,20 +884,18 @@ struct RemovePluginSheet: View {
         guard let plugin else { return "" }
         if model.pluginRemovalDone {
             return """
-                \(plugin.name) is out of Claude Code's register and its folder is in the Trash, with a \
-                copy in the Loadout backups. The \(plugin.marketplace) marketplace stays, so /plugin in \
-                Claude Code can install it again. A session already running still has it loaded until \
-                it restarts.
+                \(plugin.name) 已从 Claude Code 的登记表中移除，文件夹在废纸篓里，Loadout 备份里\
+                也有一份拷贝。\(plugin.marketplace) 市场还在，所以在 Claude Code 里用 /plugin 可以\
+                重新安装。已经在运行的会话要重启后才会卸下它。
                 """
         }
         let marketplace = plugin.marketplace.isEmpty
-            ? "Its marketplace"
-            : "The \(plugin.marketplace) marketplace"
+            ? "它的市场"
+            : "\(plugin.marketplace) 市场"
         return """
-            This takes away \(model.pluginContents(plugin)). The folder moves to the Trash, the entry \
-            leaves Claude Code's plugin register, and your on/off choice for it goes with them — a copy \
-            of everything goes to the Loadout backups first. \(marketplace) is left alone, so /plugin \
-            in Claude Code can install it again.
+            这会移除 \(model.pluginContents(plugin))。文件夹会移到废纸篓，条目会从 Claude Code 的\
+            插件登记表中删掉，你对它的启用或停用选择也一起清除。动手之前，所有内容会先拷贝一份到 \
+            Loadout 备份。\(marketplace)不受影响，所以在 Claude Code 里用 /plugin 可以重新安装。
             """
     }
 }
@@ -938,18 +937,18 @@ struct MakeGlobalWarningSheet: View {
             HStack {
                 Spacer()
                 if done {
-                    Button("Done") { close() }
+                    Button("完成") { close() }
                         .keyboardShortcut(.defaultAction)
-                        .help("Close this")
+                        .help("关闭")
                         .pointingHand()
                 } else {
-                    Button("Cancel") { close() }
+                    Button("取消") { close() }
                         .keyboardShortcut(.cancelAction)
-                        .help("Leave it where it is, working only inside that repository")
+                        .help("保持原样，只在那个仓库里生效")
                         .pointingHand()
-                    Button("Make Global") { model.confirmMakeGlobal() }
+                    Button("设为全局") { model.confirmMakeGlobal() }
                         .keyboardShortcut(.defaultAction)
-                        .help("Copy it into your own folder, where every project sees it")
+                        .help("拷贝到你自己的文件夹，每个项目都能用到")
                         .pointingHand()
                 }
             }
@@ -964,24 +963,23 @@ struct MakeGlobalWarningSheet: View {
     }
 
     private var title: String {
-        if model.makeGlobalError != nil { return "Couldn't copy it" }
-        if model.makeGlobalDestination != nil { return "It's yours now" }
-        return "You'll have two of these"
+        if model.makeGlobalError != nil { return "无法拷贝" }
+        if model.makeGlobalDestination != nil { return "现在它归你了" }
+        return "你会有两份"
     }
 
     private var message: String {
         if let error = model.makeGlobalError { return error }
         guard let item else { return "" }
-        let noun = item.kind.briefingNoun
         let repository: String
-        if case .project(let name) = item.origin { repository = name } else { repository = "the repository" }
+        if case .project(let name) = item.origin { repository = "\(name) 仓库" } else { repository = "原仓库" }
         if model.makeGlobalDestination != nil {
-            return "\(item.name) is one of your \(noun)s from now on, so every project sees it. \(repository) keeps the one it had, and the two are separate files."
+            return "从现在起，\(item.name) 归你所有，每个项目都能用到。\(repository)保留它原来那份，两者是各自独立的文件。"
         }
         return """
-            \(item.name) is copied into your own \(noun)s, where every project sees it. \(repository) \
-            keeps the one it has, so nobody else loses anything — but the two are separate files from \
-            now on: their changes stop reaching your copy, and yours never touch theirs.
+            \(item.name) 会拷贝到你自己的目录，每个项目都能用到。\(repository)保留它现有的那份，\
+            别人什么都不会少。但从此两者是各自独立的文件：他们的修改不会再同步到你的拷贝，你的\
+            修改也不会影响他们。
             """
     }
 }
@@ -991,33 +989,38 @@ struct ProjectSkillWarningSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var dontAskAgain = false
 
+    /// The name with its own spaces, so "停用 my-skill 会" and "停用它会" both read right.
+    private var disableTarget: String {
+        model.pendingProjectDisable.map { " \($0.name) " } ?? "它"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("This skill lives in a repository")
+            Text("这个技能在仓库里")
                 .font(.title3.weight(.semibold))
-            Text("Disabling \(model.pendingProjectDisable?.name ?? "it") moves its folder to .claude/skills-off inside the project. The change will show up alongside your work, and pushing it would disable the skill for everyone on that repository.")
+            Text("停用\(disableTarget)会把它的文件夹移到项目内的 .claude/skills-off。这个改动会和你手上的工作一起出现，一旦推送，这个仓库的所有人都会停用这个技能。")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Toggle("Don't tell me again", isOn: $dontAskAgain)
+            Toggle("不再提醒", isOn: $dontAskAgain)
                 .toggleStyle(.checkbox)
-                .help("Switch off skills in a repository from now on without this warning")
+                .help("以后停用仓库里的技能时，不再显示这条警告")
                 .pointingHand()
             HStack {
                 Spacer()
-                Button("Cancel") {
+                Button("取消") {
                     model.pendingProjectDisable = nil
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
-                .help("Leave the skill enabled")
+                .help("让技能保持启用")
                 .pointingHand()
-                Button("Disable") {
+                Button("停用") {
                     model.confirmProjectDisable(rememberChoice: dontAskAgain)
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .help("Move the skill aside inside the repository")
+                .help("在仓库内把技能挪到一边")
                 .pointingHand()
             }
         }

@@ -64,7 +64,7 @@ public final class ChatRunner: @unchecked Sendable {
         do {
             try task.run()
         } catch {
-            onEvent(.finished(error: "Couldn't run \(cli.label): \(error.localizedDescription)"))
+            onEvent(.finished(error: "无法运行 \(cli.label)：\(error.localizedDescription)"))
             return
         }
 
@@ -118,16 +118,16 @@ public final class ChatRunner: @unchecked Sendable {
         lock.unlock()
 
         if timedOut {
-            onEvent(.finished(error: "The assistant was still working after \(Int(timeout / 60)) minutes and was stopped."))
+            onEvent(.finished(error: "助手运行 \(Int(timeout / 60)) 分钟后仍未完成，已被停止。"))
         } else if cancelled {
-            onEvent(.finished(error: "Stopped."))
+            onEvent(.finished(error: "已停止。"))
         } else if task.terminationStatus != 0 {
             // Now the chatter matters: it is usually the only thing that says why it failed.
             let reason = collected.text()
             onEvent(.finished(
                 error: reason.isEmpty
-                    ? "\(cli.label) exited with code \(task.terminationStatus)."
-                    : "\(cli.label) failed: \(reason)"
+                    ? "\(cli.label) 已退出，退出码 \(task.terminationStatus)。"
+                    : "\(cli.label) 运行失败：\(reason)"
             ))
         } else {
             onEvent(.finished(error: nil))

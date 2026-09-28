@@ -7,8 +7,8 @@ public enum ItemSort: String, CaseIterable, Sendable {
 
     public var label: String {
         switch self {
-        case .name: return "Name"
-        case .usage: return "Most used"
+        case .name: return "名称"
+        case .usage: return "最常用"
         case .frontmatter: return "Frontmatter"
         }
     }
@@ -29,11 +29,11 @@ public enum Selection: String, Equatable, Hashable, Sendable, CaseIterable {
 
     public var title: String {
         switch self {
-        case .skills: return "Skills"
-        case .commands: return "Commands"
-        case .agents: return "Agents"
+        case .skills: return "技能"
+        case .commands: return "命令"
+        case .agents: return "子代理"
         case .mcp: return "MCP"
-        case .plugins: return "Plugins"
+        case .plugins: return "插件"
         }
     }
 
@@ -68,13 +68,13 @@ public enum ItemFilter: String, Equatable, Hashable, Sendable, CaseIterable {
     /// possessive fragment, where "Personal 12" reads as a label.
     public var title: String {
         switch self {
-        case .all: return "All"
-        case .enabled: return "On"
-        case .mine: return "Personal"
-        case .fromPlugins: return "From plugins"
-        case .neverUsed: return "Never used"
-        case .disabled: return "Off"
-        case .overBudget: return "Over budget"
+        case .all: return "全部"
+        case .enabled: return "已启用"
+        case .mine: return "个人"
+        case .fromPlugins: return "来自插件"
+        case .neverUsed: return "从未使用"
+        case .disabled: return "已停用"
+        case .overBudget: return "超出预算"
         case .frontmatter: return "Frontmatter"
         }
     }
@@ -83,16 +83,16 @@ public enum ItemFilter: String, Equatable, Hashable, Sendable, CaseIterable {
     /// The full sentence a short chip label can't carry on its own, shown on hover.
     public var hint: String {
         switch self {
-        case .all: return "Everything in this list"
-        case .enabled: return "Currently turned on and available to the assistant"
-        case .mine: return "Created and kept locally, not from a project or plugin"
-        case .fromPlugins: return "Comes from an installed plugin"
-        case .neverUsed: return "Never used in the last 90 days"
-        case .disabled: return "Currently turned off"
+        case .all: return "这个列表里的全部内容"
+        case .enabled: return "当前已启用，助手可以使用"
+        case .mine: return "在本机创建和保存，不来自项目或插件"
+        case .fromPlugins: return "来自已安装的插件"
+        case .neverUsed: return "最近 90 天从未使用"
+        case .disabled: return "当前已停用"
         case .overBudget:
-            return "Breaks a documented limit: body over \(Budget.maxBodyLines) lines or \(Budget.maxBodyWords) words, or a name or description over its maximum"
+            return "超出文档规定的上限：正文超过 \(Budget.maxBodyLines) 行或 \(Budget.maxBodyWords) 词，或者名称、描述超过最大长度"
         case .frontmatter:
-            return "Has the selected frontmatter key"
+            return "包含所选的 frontmatter 键"
         }
     }
 }
@@ -241,12 +241,12 @@ public extension Usage {
     /// subtitle print for dates.
     static func relative(_ date: Date, now: Date = Date()) -> String {
         let seconds = now.timeIntervalSince(date)
-        if seconds < 3600 { return "minutes ago" }
-        if seconds < 86_400 { return "today" }
+        if seconds < 3600 { return "几分钟前" }
+        if seconds < 86_400 { return "今天" }
         let days = Int(seconds / 86_400)
-        if days == 1 { return "yesterday" }
-        if days < 30 { return "\(days) days ago" }
+        if days == 1 { return "昨天" }
+        if days < 30 { return "\(days) 天前" }
         let months = days / 30
-        return months == 1 ? "1 month ago" : "\(months) months ago"
+        return "\(months) 个月前"
     }
 }

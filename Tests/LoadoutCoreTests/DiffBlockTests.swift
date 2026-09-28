@@ -29,7 +29,7 @@ final class DiffBlockTests: XCTestCase {
         XCTAssertEqual(blocks[0].start, 2)
         XCTAssertEqual(blocks[0].removedText, ["description: does stuff"])
         XCTAssertEqual(blocks[0].addedText, ["description: Use when verifying that skills load."])
-        XCTAssertEqual(blocks[0].summary, "1 line changed")
+        XCTAssertEqual(blocks[0].summary, "修改 1 行")
     }
 
     func testIdenticalFilesHaveNoBlocks() {

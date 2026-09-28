@@ -102,7 +102,7 @@ final class InventoryTests: XCTestCase {
         fixture.rawSkill("aberto", contents: "---\nname: aberto\ndescription: x\n\nNo closing fence.")
 
         let item = InventoryScanner(paths: fixture.paths).scanAll().items.first { $0.kind == .skill }
-        XCTAssertEqual(item?.warning, "The frontmatter opens but never closes with ---.")
+        XCTAssertEqual(item?.warning, "frontmatter 开了头，但没有用 --- 结束。")
     }
 
     func testMismatchBetweenFolderAndDeclaredNameIsFlagged() {
@@ -111,7 +111,7 @@ final class InventoryTests: XCTestCase {
 
         let item = InventoryScanner(paths: fixture.paths).scanAll().items.first { $0.kind == .skill }
         XCTAssertNotNil(item?.warning)
-        XCTAssertTrue(item?.warning?.contains("doesn't match") == true)
+        XCTAssertTrue(item?.warning?.contains("不一致") == true)
     }
 
     // MARK: AC1.3
@@ -272,7 +272,7 @@ final class InventoryTests: XCTestCase {
         XCTAssertFalse(items.contains(where: \.enabled))
         XCTAssertEqual(
             items.first?.warning,
-            "Not approved yet, so Claude is not loading it. Turning it on here is the answer it is waiting for."
+            "还没批准，所以 Claude 没有加载它。在这里打开它，就是 Claude 在等的那个答复。"
         )
         // Points at the repository's own file, not at the reader's config.
         XCTAssertEqual(items.first?.path, fixture.paths.projectMCPJSON(repo))
@@ -410,7 +410,7 @@ final class InventoryTests: XCTestCase {
     /// old rationale for calling it "Global" (a sidebar label about where a skill applies)
     /// no longer applies to a filter chip, whose job is to say whose it is.
     func testTheMineChipIsLabelledByWhoseItIsNotByWhereItApplies() {
-        XCTAssertEqual(ItemFilter.mine.title, "Personal")
+        XCTAssertEqual(ItemFilter.mine.title, "个人")
     }
 
     /// `.fromPlugins` narrows to items whose origin is `.plugin` — a filter per origin, so

@@ -77,11 +77,11 @@ enum AppIconCache {
 
     /// Where a given id's icon came from, so the UI never has to leave it a mystery.
     static func iconSource(for id: String, appPath: String?) -> String {
-        if userIcon(for: id) != nil { return "Custom" }
+        if userIcon(for: id) != nil { return "自定义" }
         if let appPath, FileManager.default.fileExists(atPath: appPath) {
-            return "From \(URL(fileURLWithPath: appPath).lastPathComponent)"
+            return "来自 \(URL(fileURLWithPath: appPath).lastPathComponent)"
         }
-        return "No icon"
+        return "无图标"
     }
 
     /// Copies a chosen image in as `<id>.png`. Copies, never moves: the original stays put.
@@ -94,7 +94,7 @@ enum AppIconCache {
               let rep = NSBitmapImageRep(data: tiff),
               let png = rep.representation(using: .png, properties: [:])
         else {
-            throw LoadoutError.io("Couldn't read \(source.lastPathComponent) as an image.")
+            throw LoadoutError.io("无法把 \(source.lastPathComponent) 读取为图片。")
         }
         let destination = userIconDirectory.appendingPathComponent("\(id).png")
         try png.write(to: destination, options: .atomic)

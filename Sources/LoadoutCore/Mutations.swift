@@ -47,7 +47,7 @@ public struct Mutations: Sendable {
         guard let first = real.first else { throw LoadoutError.notFound(name) }
         guard real.count == 1 else {
             throw LoadoutError.io(
-                "\(name) has its own copy in more than one assistant, and they may differ. Merge them by hand first."
+                "\(name) 在不止一个助手里各有一份自己的副本，内容可能不同。请先手动合并。"
             )
         }
         return Owner(id: first.id, root: first.skillsRoot)
@@ -66,7 +66,7 @@ public struct Mutations: Sendable {
     @discardableResult
     public func disableSkill(_ item: Item, assistants: [Assistant] = []) throws -> URL {
         guard item.kind == .skill else {
-            throw LoadoutError.notEditable("Only skills can be disabled this way: \(item.name)")
+            throw LoadoutError.notEditable("只有技能能这样停用：\(item.name)")
         }
 
         switch item.origin {
@@ -129,7 +129,7 @@ public struct Mutations: Sendable {
     @discardableResult
     public func enableSkill(_ item: Item, into chosen: [Assistant] = [], assistants: [Assistant] = []) throws -> URL {
         guard item.kind == .skill else {
-            throw LoadoutError.notEditable("Only skills can be enabled this way: \(item.name)")
+            throw LoadoutError.notEditable("只有技能能这样启用：\(item.name)")
         }
         guard let folder = item.directory else { throw LoadoutError.notFound(item.name) }
 
@@ -174,7 +174,7 @@ public struct Mutations: Sendable {
                 try fm.createSymbolicLink(at: link, withDestinationURL: canonical)
             } catch {
                 throw LoadoutError.io(
-                    "\(item.name) is back in the shared folder, but linking it to \(assistant.label) failed: \(error.localizedDescription)"
+                    "\(item.name) 已放回共享文件夹，但链接到 \(assistant.label) 失败：\(error.localizedDescription)"
                 )
             }
             if assistant.id == first.id { restored = link }
@@ -201,7 +201,7 @@ public struct Mutations: Sendable {
     /// a shared store, so there is nothing to choose.
     @discardableResult
     public func setCommand(_ item: Item, enabled: Bool, plugin: PluginInfo? = nil) throws -> URL {
-        if let plugin, !plugin.enabled { throw LoadoutError.io("Turn on the \(plugin.name) plugin before changing this item.") }
+        if let plugin, !plugin.enabled { throw LoadoutError.io("先启用 \(plugin.name) 插件，再更改这一项。") }
         guard item.kind == .command || item.kind == .agent, let file = item.path else {
             throw LoadoutError.notEditable(item.name)
         }
@@ -258,7 +258,7 @@ public struct Mutations: Sendable {
             try fm.createDirectory(at: directory, withIntermediateDirectories: true)
             try text.write(to: file, atomically: true, encoding: .utf8)
         } catch {
-            throw LoadoutError.io("Couldn't create \(name): \(error.localizedDescription)")
+            throw LoadoutError.io("无法创建 \(name)：\(error.localizedDescription)")
         }
         return file
     }
@@ -280,7 +280,7 @@ public struct Mutations: Sendable {
             try fm.createSymbolicLink(at: link, withDestinationURL: file.resolvingSymlinksInPath())
         } catch {
             throw LoadoutError.io(
-                "Couldn't link \(item.name) to \(assistant.label): \(error.localizedDescription)"
+                "无法把 \(item.name) 链接到 \(assistant.label)：\(error.localizedDescription)"
             )
         }
         return link
@@ -294,14 +294,14 @@ public struct Mutations: Sendable {
         let link = assistant.commandsRoot.appendingPathComponent(file.lastPathComponent)
         guard isSymlink(link) else {
             throw LoadoutError.io(
-                "The file in \(assistant.label) is the real copy of \(item.name), not a link. Nothing was changed."
+                "\(assistant.label) 里的文件是 \(item.name) 的真实副本，不是链接。没有做任何更改。"
             )
         }
         try backups.snapshot(link)
         do {
             try fm.removeItem(at: link)
         } catch {
-            throw LoadoutError.io("Couldn't remove the link: \(error.localizedDescription)")
+            throw LoadoutError.io("无法移除链接：\(error.localizedDescription)")
         }
     }
 
@@ -360,7 +360,7 @@ public struct Mutations: Sendable {
             try fm.createDirectory(at: destinationRoot, withIntermediateDirectories: true)
             try fm.copyItem(at: source, to: destination)
         } catch {
-            throw LoadoutError.io("Couldn't copy \(item.name): \(error.localizedDescription)")
+            throw LoadoutError.io("无法复制 \(item.name)：\(error.localizedDescription)")
         }
         return destination
     }
@@ -394,7 +394,7 @@ public struct Mutations: Sendable {
         let project = projectKey(for: item)
 
         guard var root = readClaudeJSON() else {
-            throw LoadoutError.io("Couldn't read \(paths.claudeJSON.lastPathComponent).")
+            throw LoadoutError.io("无法读取 \(paths.claudeJSON.lastPathComponent)。")
         }
 
         if enabled {
@@ -444,7 +444,7 @@ public struct Mutations: Sendable {
         let project = projectKey(for: item)
 
         guard var root = readClaudeJSON() else {
-            throw LoadoutError.io("Couldn't read \(paths.claudeJSON.lastPathComponent).")
+            throw LoadoutError.io("无法读取 \(paths.claudeJSON.lastPathComponent)。")
         }
         // Switched off, so the entry is already out of the file and the record is the only copy of
         // it. Forgetting the record is the whole deletion in that case.
@@ -551,7 +551,7 @@ public struct Mutations: Sendable {
     /// does not read, and the choice is recorded by name — versions come and go, names do not.
     @discardableResult
     public func disablePluginSkill(_ item: Item, in plugin: PluginInfo) throws -> URL {
-        guard plugin.enabled else { throw LoadoutError.io("Turn on the \(plugin.name) plugin before changing this skill.") }
+        guard plugin.enabled else { throw LoadoutError.io("先启用 \(plugin.name) 插件，再更改这个技能。") }
         if plugin.assistant == "codex" { return try CodexPlugins(paths: paths).setSkill(item, in: plugin, enabled: false) }
         guard item.kind == .skill, case .plugin = item.origin else {
             throw LoadoutError.notEditable(item.name)
@@ -565,7 +565,7 @@ public struct Mutations: Sendable {
     /// Brings it back and forgets it, so the next update leaves it alone (AC3.14).
     @discardableResult
     public func enablePluginSkill(_ item: Item, in plugin: PluginInfo) throws -> URL {
-        guard plugin.enabled else { throw LoadoutError.io("Turn on the \(plugin.name) plugin before changing this skill.") }
+        guard plugin.enabled else { throw LoadoutError.io("先启用 \(plugin.name) 插件，再更改这个技能。") }
         if plugin.assistant == "codex" { return try CodexPlugins(paths: paths).setSkill(item, in: plugin, enabled: true) }
         guard item.kind == .skill, case .plugin = item.origin else {
             throw LoadoutError.notEditable(item.name)
@@ -611,7 +611,7 @@ public struct Mutations: Sendable {
             try fm.createDirectory(at: destinationRoot, withIntermediateDirectories: true)
             try fm.moveItem(at: folder, to: destination)
         } catch {
-            throw LoadoutError.io("Couldn't move \(folder.lastPathComponent): \(error.localizedDescription)")
+            throw LoadoutError.io("无法移动 \(folder.lastPathComponent)：\(error.localizedDescription)")
         }
         return destination
     }
@@ -646,7 +646,7 @@ public struct Mutations: Sendable {
             )
             try fm.createSymbolicLink(at: link, withDestinationURL: canonical)
         } catch {
-            throw LoadoutError.io("Couldn't link \(item.name) to \(assistant.label): \(error.localizedDescription)")
+            throw LoadoutError.io("无法把 \(item.name) 链接到 \(assistant.label)：\(error.localizedDescription)")
         }
         return link
     }
@@ -658,20 +658,20 @@ public struct Mutations: Sendable {
     public func unshare(_ item: Item, from assistant: Assistant) throws {
         guard item.assistants.count > 1 else {
             throw LoadoutError.io(
-                "\(item.name) only exists in \(assistant.label). Removing it there would lose it — use Disable instead."
+                "\(item.name) 只存在于 \(assistant.label)。从那里移除就会丢失它，请改用“停用”。"
             )
         }
         let link = assistant.skillsRoot.appendingPathComponent(item.name)
         guard isSymlink(link) else {
             throw LoadoutError.io(
-                "The folder in \(assistant.label) is the real copy of \(item.name), not a link. Nothing was changed."
+                "\(assistant.label) 里的文件夹是 \(item.name) 的真实副本，不是链接。没有做任何更改。"
             )
         }
         try backups.snapshot(link)
         do {
             try fm.removeItem(at: link)
         } catch {
-            throw LoadoutError.io("Couldn't remove the link: \(error.localizedDescription)")
+            throw LoadoutError.io("无法移除链接：\(error.localizedDescription)")
         }
     }
 
@@ -690,7 +690,7 @@ public struct Mutations: Sendable {
         guard let source = realCopies.first else { throw LoadoutError.notFound(name) }
         guard realCopies.count == 1 else {
             throw LoadoutError.io(
-                "\(name) has its own copy in more than one assistant, and they may differ. Merge them by hand first."
+                "\(name) 在不止一个助手里各有一份自己的副本，内容可能不同。请先手动合并。"
             )
         }
 
@@ -700,7 +700,7 @@ public struct Mutations: Sendable {
             try fm.moveItem(at: source, to: canonical)
             try fm.createSymbolicLink(at: source, withDestinationURL: canonical)
         } catch {
-            throw LoadoutError.io("Couldn't share \(name): \(error.localizedDescription)")
+            throw LoadoutError.io("无法共享 \(name)：\(error.localizedDescription)")
         }
         return canonical
     }
@@ -747,7 +747,7 @@ public struct Mutations: Sendable {
     /// The Trash, never a delete, and a snapshot first: this is somebody's tree of files, and the
     /// same rule the rest of the app follows for a folder it did not write.
     public func removePlugin(_ plugin: PluginInfo) throws {
-        guard plugin.assistant == "claude" else { throw LoadoutError.io("Remove this plugin in Codex. You can turn it off here without removing its files.") }
+        guard plugin.assistant == "claude" else { throw LoadoutError.io("请在 Codex 里移除这个插件。你可以在这里停用它，不会删掉它的文件。") }
         // The install path comes out of a JSON file this app does not own. Refusing anything outside
         // the plugin cache is what keeps a hand-edited or corrupted register from pointing the Trash
         // at a home directory.
@@ -755,11 +755,11 @@ public struct Mutations: Sendable {
         let target = plugin.installPath.standardizedFileURL
         guard target.path.hasPrefix(cache + "/") else {
             throw LoadoutError.io(
-                "\(plugin.name) is recorded as living at \(target.path), which is outside the plugin cache. Nothing was changed."
+                "记录里 \(plugin.name) 的位置是 \(target.path)，在插件缓存之外。没有做任何更改。"
             )
         }
         guard fm.fileExists(atPath: paths.installedPlugins.path) else {
-            throw LoadoutError.notFound("Claude Code's plugin register")
+            throw LoadoutError.notFound("Claude Code 的插件登记文件")
         }
 
         // The register first, and only then the files: an app killed between the two leaves a plugin
@@ -798,7 +798,7 @@ public struct Mutations: Sendable {
                 try fm.trashItem(at: target, resultingItemURL: nil)
             } catch {
                 throw LoadoutError.io(
-                    "The register is updated, but the folder wouldn't move to the Trash: \(error.localizedDescription)"
+                    "登记文件已更新，但文件夹没能移到废纸篓：\(error.localizedDescription)"
                 )
             }
             // The folder above it is `cache/<marketplace>/<plugin>`, one level per version. Emptied
@@ -823,7 +823,7 @@ public struct Mutations: Sendable {
             )
             try data.write(to: file, options: .atomic)
         } catch {
-            throw LoadoutError.io("Couldn't write \(file.lastPathComponent): \(error.localizedDescription)")
+            throw LoadoutError.io("无法写入 \(file.lastPathComponent)：\(error.localizedDescription)")
         }
     }
 
@@ -844,7 +844,7 @@ public struct Mutations: Sendable {
         do {
             try contents.write(to: file, atomically: true, encoding: .utf8)
         } catch {
-            throw LoadoutError.io("Couldn't save \(file.lastPathComponent): \(error.localizedDescription)")
+            throw LoadoutError.io("无法保存 \(file.lastPathComponent)：\(error.localizedDescription)")
         }
     }
 
@@ -859,7 +859,7 @@ public struct Mutations: Sendable {
         let root = folder.standardizedFileURL
         let file = root.appendingPathComponent(relativePath).standardizedFileURL
         guard file.path.hasPrefix(root.path + "/") else {
-            throw LoadoutError.io("\(relativePath) is outside \(root.lastPathComponent) and wasn't written.")
+            throw LoadoutError.io("\(relativePath) 在 \(root.lastPathComponent) 之外，没有写入。")
         }
 
         if fm.fileExists(atPath: file.path) {
@@ -870,7 +870,7 @@ public struct Mutations: Sendable {
         do {
             try contents.write(to: file, atomically: true, encoding: .utf8)
         } catch {
-            throw LoadoutError.io("Couldn't save \(relativePath): \(error.localizedDescription)")
+            throw LoadoutError.io("无法保存 \(relativePath)：\(error.localizedDescription)")
         }
     }
 
@@ -903,7 +903,7 @@ public struct Mutations: Sendable {
                 to: folder.appendingPathComponent("SKILL.md"), atomically: true, encoding: .utf8
             )
         } catch {
-            throw LoadoutError.io("Couldn't create \(name): \(error.localizedDescription)")
+            throw LoadoutError.io("无法创建 \(name)：\(error.localizedDescription)")
         }
         return folder
     }
@@ -916,7 +916,7 @@ public struct Mutations: Sendable {
         do {
             try fm.trashItem(at: target, resultingItemURL: nil)
         } catch {
-            throw LoadoutError.io("Couldn't move \(item.name) to the Trash: \(error.localizedDescription)")
+            throw LoadoutError.io("无法把 \(item.name) 移到废纸篓：\(error.localizedDescription)")
         }
     }
 }

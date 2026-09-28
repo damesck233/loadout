@@ -22,14 +22,13 @@ struct ProjectsSettings: View {
 
     var body: some View {
         SettingsGroup(
-            title: "Where your projects live",
+            title: "项目放在哪里",
             // The depth is interpolated, not spelled out: the sentence said two while the search
             // went three deep, and the row below it printed the real number two lines away.
-            note: "Loadout looks inside these for repositories — anything with a .git or a .claude "
-                + "inside, up to \(ProjectRoots.searchDepth) levels down. A folder that is itself a "
-                + "repository counts as one, so you can point straight at the project you work in.",
-            footnote: "A project's own skills and commands appear once you pick it from the scope "
-                + "button above the list."
+            note: "Loadout 会在这些文件夹里查找代码仓库，也就是含有 .git 或 .claude 的文件夹，"
+                + "最多向下 \(ProjectRoots.searchDepth) 层。文件夹本身是仓库的也算，"
+                + "所以可以直接指向你正在做的项目。",
+            footnote: "在列表上方的范围按钮里选中某个项目后，就能看到它自己的技能和命令。"
         ) {
             ForEach(model.projectRoots.folders, id: \.self) { folder in
                 SettingsRow(
@@ -38,8 +37,8 @@ struct ProjectsSettings: View {
                     mono: true
                 ) {
                     SettingsLinkButton(
-                        title: "Remove",
-                        help: "Stop looking in \(ProjectRoots.abbreviate(folder, home: model.paths.home))"
+                        title: "移除",
+                        help: "不再查找 \(ProjectRoots.abbreviate(folder, home: model.paths.home))"
                     ) {
                         model.setProjectRoots(model.projectRoots.folders.filter { $0 != folder })
                     }
@@ -50,32 +49,32 @@ struct ProjectsSettings: View {
             // briefly here while a second, hidden source was also feeding the list, which made it
             // read as a lie: "nothing chosen" over "89 projects found".
             SettingsRow(
-                label: model.projectRoots.folders.isEmpty ? "Choose your first folder" : "Add another folder",
+                label: model.projectRoots.folders.isEmpty ? "选择第一个文件夹" : "再添加一个文件夹",
                 sub: model.projectRoots.folders.isEmpty
-                    ? "Until you do, only what is loaded globally is listed"
+                    ? "选好之前，只列出全局加载的内容"
                     : found,
                 dividing: false
             ) {
-                Button("Choose…") { add() }
+                Button("选择…") { add() }
                     .buttonStyle(V2ToolbarButtonStyle(
                         prominent: model.projectRoots.folders.isEmpty, enabled: true
                     ))
-                    .help("Choose a folder that holds your repositories, or a repository itself")
+                    .help("选择存放代码仓库的文件夹，也可以直接选某个仓库")
                     .pointingHand()
             }
         }
 
         SettingsGroup(
-            title: "Scanning",
-            footnote: "Read at every launch, and again whenever you change these folders. Nothing "
-                + "is written inside your repositories — Loadout only looks."
+            title: "扫描",
+            footnote: "每次启动时读取，改动这些文件夹后也会重新读取。"
+                + "Loadout 只看不写，不会往你的仓库里写任何东西。"
         ) {
-            SettingsRow(label: "Search depth") {
-                SettingsValue(text: "\(ProjectRoots.searchDepth) levels")
+            SettingsRow(label: "查找深度") {
+                SettingsValue(text: "\(ProjectRoots.searchDepth) 层")
             }
             SettingsRow(
-                label: "What counts as a project",
-                sub: "A folder holding a .git or a .claude",
+                label: "怎样算一个项目",
+                sub: "含有 .git 或 .claude 的文件夹",
                 dividing: false
             ) {
                 EmptyView()
@@ -87,7 +86,7 @@ struct ProjectsSettings: View {
 
     private var found: String {
         let count = model.projects.count
-        return "\(count) \(count == 1 ? "project" : "projects") found"
+        return "找到 \(count) 个项目"
     }
 
     /// How many projects came out of this folder in particular, so a folder that turned out to
@@ -95,9 +94,9 @@ struct ProjectsSettings: View {
     /// Reads the count worked out off the main thread rather than walking the disk here: this is
     /// called from `body`, and counting means three levels of directory listing per folder.
     private func countIn(_ folder: URL) -> String {
-        guard let count = counts[folder] else { return "counting…" }
-        guard count > 0 else { return "no repositories found in here" }
-        return "\(count) \(count == 1 ? "project" : "projects")"
+        guard let count = counts[folder] else { return "正在统计…" }
+        guard count > 0 else { return "这里没有找到代码仓库" }
+        return "\(count) 个项目"
     }
 
     private func countRepositories() {
@@ -117,8 +116,8 @@ struct ProjectsSettings: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
-        panel.prompt = "Use folder"
-        panel.message = "Choose a folder that holds your repositories — or a repository itself."
+        panel.prompt = "使用此文件夹"
+        panel.message = "选择存放代码仓库的文件夹，也可以直接选某个仓库。"
         guard panel.runModal() == .OK else { return }
         // Appended rather than replacing, and a folder chosen twice is not added twice.
         var folders = model.projectRoots.folders

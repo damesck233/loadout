@@ -124,17 +124,17 @@ public enum CustomAssistantCLIStore {
 public enum AssistantCLIValidation {
     public static func validate(name: String, path: String, template: String) throws {
         guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
-            throw LoadoutError.invalidAssistantCLI("Give the assistant a name.")
+            throw LoadoutError.invalidAssistantCLI("给助手起个名字。")
         }
         guard FileManager.default.isExecutableFile(atPath: path) else {
-            throw LoadoutError.invalidAssistantCLI("Couldn't find an executable file at \(path).")
+            throw LoadoutError.invalidAssistantCLI("在 \(path) 找不到可执行文件。")
         }
         let placeholders = template.split(whereSeparator: \.isWhitespace)
             .filter { $0 == AssistantCLI.promptPlaceholder }
         guard placeholders.count == 1 else {
             let reason = placeholders.isEmpty
-                ? "The arguments must include \(AssistantCLI.promptPlaceholder) where the question goes."
-                : "The arguments can only use \(AssistantCLI.promptPlaceholder) once."
+                ? "参数中必须包含 \(AssistantCLI.promptPlaceholder)，标明问题放在哪里。"
+                : "参数中只能使用一次 \(AssistantCLI.promptPlaceholder)。"
             throw LoadoutError.invalidAssistantCLI(reason)
         }
     }

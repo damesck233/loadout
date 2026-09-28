@@ -88,10 +88,10 @@ struct WelcomeSheet: View {
 
     private var claim: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Loadout has read what you have.")
+            Text("你已经有的，Loadout 都读到了。")
                 .font(.system(size: 23, weight: .semibold))
                 .tracking(-0.5)
-            Text("Everything below is already loaded globally — in every project you open.")
+            Text("下面这些都已全局加载，你打开的每个项目里都有。")
                 .font(.system(size: 13))
                 .foregroundStyle(V2.textMid)
                 .fixedSize(horizontal: false, vertical: true)
@@ -133,10 +133,10 @@ struct WelcomeSheet: View {
 
     private var tallies: [(count: Int, label: String)] {
         [
-            (model.items.filter { $0.kind == .skill }.count, "skills"),
-            (model.items.filter { $0.kind == .command }.count, "commands"),
-            (model.items.filter { $0.kind == .agent }.count, "subagents"),
-            (model.items.filter { $0.kind == .mcp }.count, "MCP servers"),
+            (model.items.filter { $0.kind == .skill }.count, "技能"),
+            (model.items.filter { $0.kind == .command }.count, "命令"),
+            (model.items.filter { $0.kind == .agent }.count, "子代理"),
+            (model.items.filter { $0.kind == .mcp }.count, "MCP 服务器"),
         ]
     }
 
@@ -149,7 +149,7 @@ struct WelcomeSheet: View {
                 AssistantMark(assistant: assistant, present: true, size: 22)
                     .help(assistant.label)
             }
-            Text("across \(model.assistants.count) assistants")
+            Text("分布在 \(model.assistants.count) 个助手里")
                 .font(.system(size: 12))
                 .foregroundStyle(V2.textMid)
                 .padding(.leading, 4)
@@ -167,18 +167,18 @@ struct WelcomeSheet: View {
                 .foregroundStyle(V2.link)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Each repository can have skills of its own.")
+                Text("每个仓库都可以有自己的技能。")
                     .font(.system(size: 12.5))
                 // The chip on its own line rather than inside the sentence. Inline, the row was
                 // one HStack and the words lost the fight for width — the sentence arrived
                 // truncated as "pick the proj…", which is worse than no chip at all.
-                Text("Those appear only when you pick the project from this button, at the top left of the list:")
+                Text("要看到它们，得在列表左上角的这个按钮里选中那个项目：")
                     .font(.system(size: 12.5))
                     .foregroundStyle(V2.textMid)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
                     scopeChip
-                    Text("Two places to look, always.")
+                    Text("记住，永远有两个地方要看。")
                         .font(.system(size: 12.5))
                         .foregroundStyle(V2.textFaint)
                 }
@@ -204,7 +204,7 @@ struct WelcomeSheet: View {
         HStack(spacing: 4) {
             Image(systemName: "globe")
                 .font(.system(size: 9))
-            Text("Global")
+            Text("全局")
                 .font(.system(size: 11))
         }
         .padding(.horizontal, 6)
@@ -225,16 +225,16 @@ struct WelcomeSheet: View {
     private var question: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("Where do you keep your repositories?")
+                Text("你的仓库都放在哪儿？")
                     .font(.system(size: 16, weight: .semibold))
-                Text("The one thing Loadout cannot work out on its own.")
+                Text("只有这件事，Loadout 没法自己弄清楚。")
                     .font(.system(size: 12))
                     .foregroundStyle(V2.textFaint)
             }
 
             if offered.isEmpty {
-                Text("Nothing obvious found — point Loadout at a folder it should look inside, or at a "
-                    + "repository itself.")
+                Text("没找到明显的位置。给 Loadout 指一个该去里面找的文件夹，"
+                    + "或者直接指向某个仓库。")
                     .font(.system(size: 12))
                     .foregroundStyle(V2.textMid)
             } else {
@@ -256,7 +256,7 @@ struct WelcomeSheet: View {
                 HStack(spacing: 5) {
                     Image(systemName: "plus")
                         .font(.system(size: 10, weight: .semibold))
-                    Text("Choose another folder…")
+                    Text("选择其他文件夹…")
                         .font(.system(size: 12))
                 }
             }
@@ -314,8 +314,8 @@ struct WelcomeSheet: View {
     }
 
     private func repositoryCount(_ folder: URL) -> String {
-        guard let count = repositoryCounts[folder] else { return "counting…" }
-        return "\(count) \(count == 1 ? "repository" : "repositories")"
+        guard let count = repositoryCounts[folder] else { return "正在统计…" }
+        return "\(count) 个仓库"
     }
 
     /// Off the main thread, and only for folders not counted yet.
@@ -336,14 +336,16 @@ struct WelcomeSheet: View {
 
     private var footer: some View {
         HStack(spacing: 12) {
-            Text("You can change this any time in ")
+            Text("之后随时可以在")
                 .foregroundStyle(V2.textFaint)
-            + Text("Settings › Projects")
+            + Text("设置 › 项目")
                 .foregroundStyle(Color.white.opacity(0.55))
+            + Text("里修改")
+                .foregroundStyle(V2.textFaint)
 
             Spacer(minLength: 12)
 
-            Button("Not now") { finish(saving: false) }
+            Button("以后再说") { finish(saving: false) }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
                 .pointingHand()
 
@@ -373,8 +375,8 @@ struct WelcomeSheet: View {
     /// says what it will really do, which is nothing — and "Not now" is then the honest twin.
     private var primaryTitle: String {
         let count = chosen.count
-        guard count > 0 else { return "Continue" }
-        return "Scan \(count) \(count == 1 ? "folder" : "folders")"
+        guard count > 0 else { return "继续" }
+        return "扫描 \(count) 个文件夹"
     }
 
     /// "Not now" still closes for good. Asking again on the next launch would be nagging, and the
@@ -391,8 +393,8 @@ struct WelcomeSheet: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
-        panel.prompt = "Use folder"
-        panel.message = "Choose a folder that holds your repositories — or a repository itself."
+        panel.prompt = "使用此文件夹"
+        panel.message = "选择存放仓库的文件夹，或者直接选择某个仓库。"
         guard panel.runModal() == .OK else { return }
         // Compared standardized, the way Settings › Projects does it. Raw `URL` equality counts
         // `~/Projects` and `~/Projects/` as two different folders, and the panel hands back the

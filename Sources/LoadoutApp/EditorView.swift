@@ -491,13 +491,13 @@ enum MarkdownHighlighter {
         if budget.descriptionCharacters > Budget.maxDescriptionCharacters {
             squiggle(
                 lineStarting: "description:",
-                message: "Description is ~\(budget.descriptionTokens) tokens — over the ~\(Budget.estimatedTokens(characters: Budget.maxDescriptionCharacters)) budget it costs every session"
+                message: "描述约 \(budget.descriptionTokens) token，超出了约 \(Budget.estimatedTokens(characters: Budget.maxDescriptionCharacters)) 的预算，每个会话都要付出这笔开销"
             )
         }
         if budget.nameCharacters > Budget.maxNameCharacters {
             squiggle(
                 lineStarting: "name:",
-                message: "Name is \(budget.nameCharacters) characters — the validator rejects anything past \(Budget.maxNameCharacters)"
+                message: "名称有 \(budget.nameCharacters) 个字符，校验器会拒绝超过 \(Budget.maxNameCharacters) 个字符的名称"
             )
         }
         return issues

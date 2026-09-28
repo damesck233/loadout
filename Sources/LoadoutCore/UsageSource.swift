@@ -87,11 +87,11 @@ public enum UsageSourceState: Sendable, Equatable {
 
     public var label: String {
         switch self {
-        case .included: return "Included"
-        case .excluded: return "Not counted"
-        case .noHistory: return "No history found"
-        case .unsupported: return "Format unsupported"
-        case .error(let message): return "Couldn't read — \(message)"
+        case .included: return "已计入"
+        case .excluded: return "不计入"
+        case .noHistory: return "没有找到历史记录"
+        case .unsupported: return "格式不支持"
+        case .error(let message): return "无法读取：\(message)"
         }
     }
 }

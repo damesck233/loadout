@@ -21,14 +21,14 @@ extension Paths {
         public var summary: String? {
             guard movedAnything else { return nil }
             let parts = [
-                backups ? "backups" : nil,
-                index ? "the usage index" : nil,
-                icons ? "the assistant icons" : nil,
+                backups ? "备份" : nil,
+                index ? "使用情况索引" : nil,
+                icons ? "助手图标" : nil,
             ].compactMap { $0 }
             let list = parts.count > 1
-                ? parts.dropLast().joined(separator: ", ") + " and " + parts[parts.count - 1]
+                ? parts.dropLast().joined(separator: "、") + "和" + parts[parts.count - 1]
                 : parts.joined()
-            return "Moved \(list) out of ~/.claude into Loadout's own folder."
+            return "已把\(list)从 ~/.claude 移到 Loadout 自己的文件夹。"
         }
     }
 

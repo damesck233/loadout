@@ -55,7 +55,7 @@ public enum ChatEventParser {
         case "result":
             let failed = (object["is_error"] as? Bool) == true
             let reason = object["result"] as? String
-            events.append(.finished(error: failed ? (reason ?? "The assistant reported an error.") : nil))
+            events.append(.finished(error: failed ? (reason ?? "助手报告了一个错误。") : nil))
             return events
         case "assistant", "user":
             break
@@ -112,7 +112,7 @@ public enum ChatEventParser {
             return events
         case "turn.failed", "error":
             let reason = (message["error"] as? [String: Any])?["message"] as? String
-            events.append(.finished(error: reason ?? "The assistant reported an error."))
+            events.append(.finished(error: reason ?? "助手报告了一个错误。"))
             return events
         case "item.completed":
             break

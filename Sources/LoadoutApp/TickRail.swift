@@ -227,7 +227,7 @@ struct TickRail: View {
 
     private func tip(_ heading: DocumentHeading) -> some View {
         VStack(alignment: .leading, spacing: 7) {
-            Text("\(Int(heading.progress * 100))% in".uppercased())
+            Text("位于 \(Int(heading.progress * 100))%")
                 .font(.system(size: 10, weight: .semibold))
                 .kerning(0.7)
                 .foregroundStyle(V2.textMid.opacity(0.75))

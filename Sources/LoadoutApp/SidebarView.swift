@@ -67,7 +67,7 @@ struct SidebarView: View {
             if model.showsEverything {
                 // Said once, where the list is: nothing on this machine loads two projects at the
                 // same time, so a merged list is for finding things, not a picture of what is on.
-                Text("Yours and every project's, to search. No assistant loads more than one project at a time.")
+                Text("你自己的和所有项目的，合在一起方便搜索。没有哪个助手会同时加载多个项目。")
                     .font(.system(size: 11))
                     .foregroundStyle(V2.textDim)
                     .fixedSize(horizontal: false, vertical: true)
@@ -88,7 +88,7 @@ struct SidebarView: View {
                 Image(systemName: model.showsEverything
                     ? "square.stack.3d.up" : (model.context == nil ? "globe" : "folder"))
                     .font(.system(size: 11))
-                Text(model.showsEverything ? "Everything" : (model.context?.name ?? "Global"))
+                Text(model.showsEverything ? "全部" : (model.context?.name ?? "全局"))
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .frame(maxWidth: 118, alignment: .leading)
@@ -99,7 +99,7 @@ struct SidebarView: View {
             }
         }
         .buttonStyle(V2PillButtonStyle(active: scopeOpen))
-        .help("Switch which project's files Claude sees, or go back to Global")
+        .help("切换 Claude 看到的是哪个项目的文件，或回到全局")
         .pointingHand()
         .popover(isPresented: $scopeOpen, arrowEdge: .bottom) {
             scopePopover
@@ -113,7 +113,7 @@ struct SidebarView: View {
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 11))
                     .foregroundStyle(V2.textDim)
-                TextField("Filter \(model.projects.count) projects", text: $projectQuery)
+                TextField("筛选 \(model.projects.count) 个项目", text: $projectQuery)
                     .textFieldStyle(.plain)
                     .font(.system(size: 12))
             }
@@ -124,31 +124,31 @@ struct SidebarView: View {
             Hairline()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    popoverGroupLabel("Scope")
+                    popoverGroupLabel("范围")
                     popoverRow(
-                        title: "Global", subtitle: nil,
+                        title: "全局", subtitle: nil,
                         checked: model.context == nil && !model.showsEverything,
-                        hint: "Everything in ~/.claude, not bound to any project"
+                        hint: "~/.claude 里的所有内容，不绑定任何项目"
                     ) {
                         model.changeContext(to: nil)
                         scopeOpen = false
                     }
                     popoverRow(
-                        title: "Everything", subtitle: "yours and every project's, to search",
+                        title: "全部", subtitle: "你自己的和所有项目的，方便搜索",
                         checked: model.showsEverything,
-                        hint: "One list of it all, each row saying where it lives. Not what an assistant loads — that is your own plus one project at a time."
+                        hint: "所有内容放在一个列表里，每行注明它在哪里。这不是助手实际加载的内容：助手加载的是你自己的，外加一次一个项目。"
                     ) {
                         model.showEverything()
                         scopeOpen = false
                     }
                     let matches = filteredProjects
                     if !matches.isEmpty {
-                        popoverGroupLabel("Projects (\(model.projects.count))")
+                        popoverGroupLabel("项目（\(model.projects.count)）")
                         ForEach(matches) { project in
                             popoverRow(
                                 title: project.name, subtitle: project.relativePath,
                                 checked: model.context?.id == project.id,
-                                hint: "Scope the list to what Claude sees inside \(project.relativePath)"
+                                hint: "只列出 Claude 在 \(project.relativePath) 里看到的内容"
                             ) {
                                 model.changeContext(to: project)
                                 scopeOpen = false
@@ -189,7 +189,7 @@ struct SidebarView: View {
             }
         }
         .buttonStyle(V2PillButtonStyle(active: sortOpen))
-        .help("Change the order the list is sorted in")
+        .help("更改列表的排序方式")
         .pointingHand()
         .popover(isPresented: $sortOpen, arrowEdge: .bottom) {
             ScrollView {
@@ -206,7 +206,7 @@ struct SidebarView: View {
                             popoverRow(
                                 title: key, subtitle: nil,
                                 checked: model.order == .frontmatter && model.frontmatterSortKey == key,
-                                hint: "Sort by the value of \(key); files without it come last"
+                                hint: "按 \(key) 的值排序，没有这个字段的文件排在最后"
                             ) {
                                 model.sortByFrontmatter(key)
                                 sortOpen = false
@@ -247,11 +247,11 @@ struct SidebarView: View {
         HStack(spacing: 0) {
             densitySegment(
                 "comfortable", symbol: "rectangle.grid.1x2",
-                hint: "Comfortable: each item with its description"
+                hint: "宽松：每项都带描述"
             )
             densitySegment(
                 "compact", symbol: "list.dash",
-                hint: "Compact: names only, so more fits on screen"
+                hint: "紧凑：只显示名称，一屏能放下更多"
             )
         }
         .padding(2)
@@ -302,7 +302,7 @@ struct SidebarView: View {
             }
         }
         .buttonStyle(V2PillButtonStyle(active: filtersOpen, filled: count > 0))
-        .help("Narrow the list by source, state or assistant")
+        .help("按来源、状态或助手筛选列表")
         .pointingHand()
         .popover(isPresented: $filtersOpen, arrowEdge: .bottom) {
             filtersPopover
@@ -316,26 +316,26 @@ struct SidebarView: View {
     private var filtersPopover: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                popoverGroupLabel("Source")
+                popoverGroupLabel("来源")
                 filterOption(.all)
                 filterOption(.mine)
                 filterOption(.fromPlugins)
-                popoverGroupLabel("State")
+                popoverGroupLabel("状态")
                 filterOption(.enabled)
                 filterOption(.disabled)
-                popoverGroupLabel("Usage")
+                popoverGroupLabel("使用情况")
                 filterOption(.neverUsed)
                 if model.selection == .skills || model.selection == .commands || model.selection == .agents {
-                    popoverGroupLabel("Budget")
+                    popoverGroupLabel("预算")
                     filterOption(.overBudget)
                 }
                 if !model.frontmatterKeys.isEmpty {
-                    popoverGroupLabel("Frontmatter key")
+                    popoverGroupLabel("Frontmatter 字段")
                     ForEach(model.frontmatterKeys, id: \.self) { key in
                         popoverRow(
                             title: key, subtitle: nil,
                             checked: model.filter == .frontmatter && model.frontmatterFilterKey == key,
-                            hint: "Show files that set \(key)",
+                            hint: "显示设置了 \(key) 的文件",
                             trailingCount: model.count(frontmatterKey: key)
                         ) {
                             model.filterByFrontmatter(key)
@@ -344,11 +344,11 @@ struct SidebarView: View {
                     }
                 }
                 if model.selection == .skills || model.selection == .mcp {
-                    popoverGroupLabel("Assistant")
-                    assistantOption(.any, label: "Any")
+                    popoverGroupLabel("助手")
+                    assistantOption(.any, label: "任意")
                     // A server has one owner, so "in more than one" can never match on MCP.
                     if model.selection == .skills {
-                        assistantOption(.multiple, label: "In more than one")
+                        assistantOption(.multiple, label: "在多个助手中")
                     }
                     ForEach(model.visibleAssistants) { assistant in
                         assistantOption(.one(assistant.id), label: assistant.label)
@@ -361,7 +361,7 @@ struct SidebarView: View {
                     model.assistantFilter = .any
                     filtersOpen = false
                 } label: {
-                    Text("Clear filters")
+                    Text("清除筛选")
                         .font(.system(size: 12.5))
                         .foregroundStyle(V2.textMid)
                         .padding(.horizontal, 9)
@@ -469,12 +469,12 @@ struct SidebarView: View {
         .frame(height: 26)
         .background(V2.well, in: RoundedRectangle(cornerRadius: 7))
         .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(Color.white.opacity(0.08), lineWidth: 0.5))
-        .help("Filter the list as you type (⌘F)")
+        .help("边输入边筛选列表（⌘F）")
     }
 
     private var searchPlaceholder: String {
         let count = model.visibleItems.count
-        return "Search \(count) \(model.selection.searchNoun(plural: count != 1))"
+        return "搜索 \(model.selection.counted(count))"
     }
 
     // MARK: Tokens
@@ -492,10 +492,10 @@ struct SidebarView: View {
             tokens.append(FilterToken(id: "scope", label: project.name) { model.changeContext(to: nil) })
         }
         if model.showsEverything {
-            tokens.append(FilterToken(id: "scope", label: "Everything") { model.changeContext(to: nil) })
+            tokens.append(FilterToken(id: "scope", label: "全部") { model.changeContext(to: nil) })
         }
         if model.filter == .frontmatter, let key = model.frontmatterFilterKey {
-            tokens.append(FilterToken(id: "filter", label: "Has \(key)") {
+            tokens.append(FilterToken(id: "filter", label: "有 \(key)") {
                 model.filter = .all
                 model.frontmatterFilterKey = nil
             })
@@ -505,7 +505,7 @@ struct SidebarView: View {
         switch model.assistantFilter {
         case .any: break
         case .multiple:
-            tokens.append(FilterToken(id: "assistant", label: "In 2+ assistants") { model.assistantFilter = .any })
+            tokens.append(FilterToken(id: "assistant", label: "在 2 个以上助手中") { model.assistantFilter = .any })
         case .one(let id):
             let label = model.visibleAssistants.first { $0.id == id }?.label ?? id
             tokens.append(FilterToken(id: "assistant", label: label) { model.assistantFilter = .any })
@@ -536,7 +536,7 @@ struct SidebarView: View {
                     .contentShape(RoundedRectangle(cornerRadius: 5))
                 }
                 .buttonStyle(.plain)
-                .help("Remove this filter")
+                .help("移除这个筛选条件")
                 .pointingHand()
             }
         }
@@ -584,28 +584,28 @@ struct SidebarView: View {
             // filter that excludes everything, and a source that is genuinely empty.
             if !model.query.trimmingCharacters(in: .whitespaces).isEmpty {
                 ContentUnavailableView(
-                    "No results", systemImage: "magnifyingglass",
-                    description: Text("Nothing matches \"\(model.query)\".")
+                    "没有结果", systemImage: "magnifyingglass",
+                    description: Text("没有与“\(model.query)”匹配的内容。")
                 )
             } else if activeFilterCount > 0 {
                 ContentUnavailableView(
-                    "No matches", systemImage: "line.3.horizontal.decrease.circle",
-                    description: Text("Nothing passes the active filters. Clear them to see everything again.")
+                    "没有匹配项", systemImage: "line.3.horizontal.decrease.circle",
+                    description: Text("没有内容符合当前的筛选条件。清除筛选即可重新看到全部。")
                 )
             } else if let project = model.context {
                 // A scoped, honestly empty project: say whose emptiness this is, instead of
                 // padding the list with the global inventory the way the old scope did.
                 ContentUnavailableView(
-                    "Nothing in \(project.name)", systemImage: "folder",
-                    description: Text("This project has no \(model.selection.searchNoun(plural: true)) of its own. Switch the scope back to Global to see everything.")
+                    "\(project.name) 里什么也没有", systemImage: "folder",
+                    description: Text("这个项目自己没有\(model.selection.searchNoun(plural: true))。把范围切回全局即可看到全部。")
                 )
             } else {
                 ContentUnavailableView(
-                    "Nothing here", systemImage: "tray",
+                    "这里什么也没有", systemImage: "tray",
                     description: Text(
                         model.selection == .skills
-                            ? "This source is empty. Create a skill with ⌘N."
-                            : "No \(model.selection.searchNoun(plural: true)) found on this machine."
+                            ? "这个来源是空的。按 ⌘N 创建一个技能。"
+                            : "这台电脑上没有找到\(model.selection.searchNoun(plural: true))。"
                     )
                 )
             }
@@ -624,15 +624,15 @@ struct SidebarView: View {
                 HStack(spacing: 5) {
                     Image(systemName: "gearshape")
                         .font(.system(size: 10.5))
-                    Text(model.showsSettings ? "Done" : "Settings")
+                    Text(model.showsSettings ? "完成" : "设置")
                 }
                 .foregroundStyle(model.showsSettings ? V2.link : Color.primary)
             }
             .buttonStyle(.plain)
             .help(
                 model.showsSettings
-                    ? "Back to the list (⌘, or Esc)"
-                    : "Projects, appearance, usage indexing, assistants and backups (⌘,)"
+                    ? "返回列表（⌘, 或 Esc）"
+                    : "项目、外观、使用情况索引、助手和备份（⌘,）"
             )
             .pointingHand()
 
@@ -642,7 +642,7 @@ struct SidebarView: View {
                 ProgressView(value: progress)
                     .progressViewStyle(.linear)
                     .frame(width: 80)
-                Text("Indexing usage…")
+                Text("正在为使用情况建立索引…")
             } else if let status = model.statusMessage {
                 Image(systemName: "checkmark.circle")
                 Text(status)
@@ -650,7 +650,7 @@ struct SidebarView: View {
                 Text(footerCount)
             }
             if model.isDirty {
-                Text("unsaved")
+                Text("未保存")
                     .foregroundStyle(V2.amber)
             }
         }
@@ -663,13 +663,13 @@ struct SidebarView: View {
 
     private var footerCount: String {
         if model.selection == .plugins {
-            return "\(model.plugins.count) \(model.plugins.count == 1 ? "plugin" : "plugins")"
+            return "\(model.plugins.count) 个插件"
         }
         let visible = model.visibleItems.count
         let total = model.count(for: model.selection)
         return visible == total
-            ? "\(total) \(model.selection.searchNoun(plural: total != 1))"
-            : "\(visible) of \(total) \(model.selection.searchNoun(plural: total != 1))"
+            ? model.selection.counted(total)
+            : "\(visible) / \(model.selection.counted(total))"
     }
 }
 
@@ -774,7 +774,7 @@ struct SidebarRow: View {
                 // The same reading as the switch beside it. Saying "Disable" over a row already
                 // drawn as off, and then moving the file with nothing on screen changing, is the
                 // menu telling a different story from the control it sits next to.
-                Button(isEnabled ? "Disable" : "Enable") { model.toggle(item) }
+                Button(isEnabled ? "停用" : "启用") { model.toggle(item) }
                     .disabled(pluginIsOff)
             }
             // Only from a repository outwards. The other direction hands a file to a team, which
@@ -783,22 +783,22 @@ struct SidebarRow: View {
                 // Gone once your copy exists, like the button in the detail pane: a menu that offers
                 // the same copy twice is a menu that lies the second time.
                 if !model.hasGlobalCopy(of: item) {
-                    Button("Make global") { model.makeGlobal(item) }
+                    Button("设为全局") { model.makeGlobal(item) }
                 }
             }
-            Button("Show in Finder") {
+            Button("在访达中显示") {
                 model.select(item.id)
                 model.revealInFinder()
             }
             if item.isEditable {
-                Button("Move to Trash", role: .destructive) {
+                Button("移到废纸篓", role: .destructive) {
                     model.select(item.id)
                     model.isConfirmingDelete = true
                 }
             }
             // Yours to remove; the ones a repository ships are the team's, and have no Remove.
             if model.canRemove(item) {
-                Button("Remove…", role: .destructive) {
+                Button("移除…", role: .destructive) {
                     model.select(item.id)
                     model.isConfirmingDelete = true
                 }
@@ -819,7 +819,7 @@ struct SidebarRow: View {
     /// repositories, were two rows with the same name and nothing to tell them apart.
     private var originTag: String? {
         if model.showsEverything {
-            return item.origin == .personal ? "global" : item.origin.label
+            return item.origin == .personal ? "全局" : item.origin.label
         }
         if model.context == nil, case .project(let name) = item.origin { return name }
         return nil
@@ -829,25 +829,25 @@ struct SidebarRow: View {
     /// gives the path that is.
     private var originTagHint: String {
         guard let directory = item.projectDirectory else {
-            return "Where this comes from"
+            return "它来自哪里"
         }
-        return "Declared under \(directory)"
+        return "声明于 \(directory)"
     }
 
     /// Says the window the person actually chose in Settings › Usage. Hardcoding 90 days told
     /// somebody on a 30-day window the wrong thing about their own numbers.
     private var usageHint: String {
         item.usage.count == 0
-            ? "Never used in \(model.usageWindowLabel)"
-            : "\(item.usage.count) uses in \(model.usageWindowLabel)"
+            ? "\(model.usageWindowLabel)内从未用过"
+            : "\(model.usageWindowLabel)内用过 \(item.usage.count) 次"
     }
 
     private var originHint: String {
-        if !isEnabled { return "Disabled — not loaded by anything right now" }
+        if !isEnabled { return "已停用：目前没有任何助手加载它" }
         switch item.origin {
-        case .personal: return "Your own, in ~/.claude"
-        case .project(let name): return "Lives in the \(name) repository"
-        case .plugin(let name): return "Comes from the \(name) plugin"
+        case .personal: return "你自己的，在 ~/.claude 里"
+        case .project(let name): return "位于 \(name) 仓库中"
+        case .plugin(let name): return "来自 \(name) 插件"
         }
     }
 
@@ -857,17 +857,17 @@ struct SidebarRow: View {
         switch item.origin {
         case .personal:
             return item.enabled
-                ? "Disable — every assistant stops loading this skill"
-                : "Enable — choose which assistants load it again"
+                ? "停用：所有助手都不再加载这个技能"
+                : "启用：选择哪些助手重新加载它"
         case .project(let name):
             return item.enabled
-                ? "Disable — moves it aside inside the \(name) repository"
-                : "Enable — puts it back in the \(name) repository"
+                ? "停用：在 \(name) 仓库里把它挪到一边"
+                : "启用：把它放回 \(name) 仓库"
         case .plugin(let plugin):
-            if pluginIsOff { return "Turn on the \(plugin) plugin before changing this item" }
+            if pluginIsOff { return "先启用 \(plugin) 插件，再修改这一项" }
             return item.enabled
-                ? "Disable just this skill, leaving the rest of the \(plugin) plugin alone"
-                : "Enable this skill again"
+                ? "只停用这个技能，\(plugin) 插件的其余部分不受影响"
+                : "重新启用这个技能"
         }
     }
 }
@@ -903,7 +903,7 @@ struct PluginTag: View {
     var body: some View {
         // "vercel-plugin", not "vercel": the name alone reads like a namespace, and the row has
         // to say what kind of thing this came from without a colour code to learn.
-        Text(quiet ? name : "\(name)-plugin")
+        Text(quiet ? name : "\(name) 插件")
             .font(.system(size: 10, weight: .medium))
             .foregroundStyle(muted ? Color.white.opacity(0.85)
                              : (quiet ? V2.textMid : V2.accent))
@@ -916,9 +916,9 @@ struct PluginTag: View {
                 in: RoundedRectangle(cornerRadius: 4)
             )
             .help(quiet
-                  ? (name == "global" ? "Yours, in ~/.claude — active in every project"
-                     : "Lives in the \(name) repository, and only works there")
-                  : "Comes from the \(name) plugin")
+                  ? (name == "全局" ? "你自己的，在 ~/.claude 里，在每个项目中都生效"
+                     : "位于 \(name) 仓库中，只在那里生效")
+                  : "来自 \(name) 插件")
     }
 }
 

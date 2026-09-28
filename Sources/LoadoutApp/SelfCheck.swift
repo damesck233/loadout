@@ -221,7 +221,7 @@ enum SelfCheck {
         // Without those, "how do I get rid of this?" had no answer on the screen that was about it.
         check("the page can say what the plugin ships", {
             guard let plugin = model.selectedPlugin else { return false }
-            return model.pluginContents(plugin).contains("skill")
+            return model.pluginContents(plugin).contains("技能")
                 && model.readablePath(of: plugin).contains("plugins/cache/official/vercel")
         }())
         // Removing a whole plugin, on a second one installed for the purpose — the checks after this
@@ -281,7 +281,7 @@ enum SelfCheck {
                   )) != nil)
             check("and both dots light up", linked?.assistants == ["claude", "codex"])
             check("with the caveat said out loud",
-                  model.statusMessage?.contains("frontmatter doesn't carry over") == true)
+                  model.statusMessage?.contains("frontmatter 不会带过去") == true)
 
             model.setAssistant(codex, on: linked!, present: false)
             check("taking it back removes only the link", !FileManager.default.fileExists(

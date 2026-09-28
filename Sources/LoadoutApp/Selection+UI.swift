@@ -7,11 +7,11 @@ extension Selection {
     /// What clicking this tab switches the window to, said as a sentence for the hover tooltip.
     var rowHint: String {
         switch self {
-        case .skills: return "Skills Claude and other assistants load automatically when they're relevant"
-        case .commands: return "Slash commands available to Claude in every project"
-        case .agents: return "Subagents Claude can delegate a task to"
-        case .mcp: return "MCP servers configured for Claude"
-        case .plugins: return "Plugins installed through Claude Code, and their enabled state"
+        case .skills: return "Claude 和其他助手在需要时自动加载的技能"
+        case .commands: return "Claude 在每个项目里都能用的斜杠命令"
+        case .agents: return "Claude 可以把任务委派给它们的子代理"
+        case .mcp: return "为 Claude 配置的 MCP 服务器"
+        case .plugins: return "通过 Claude Code 安装的插件，以及它们的启用状态"
         }
     }
 
@@ -19,11 +19,16 @@ extension Selection {
     /// singular when there is only one.
     func searchNoun(plural: Bool) -> String {
         switch self {
-        case .skills: return plural ? "skills" : "skill"
-        case .commands: return plural ? "commands" : "command"
-        case .agents: return plural ? "agents" : "agent"
-        case .mcp: return plural ? "MCP servers" : "MCP server"
-        case .plugins: return plural ? "plugins" : "plugin"
+        case .skills: return "技能"
+        case .commands: return "命令"
+        case .agents: return "子代理"
+        case .mcp: return "MCP 服务器"
+        case .plugins: return "插件"
         }
+    }
+
+    /// A count with its measure word, "56 个技能" / "3 条命令".
+    func counted(_ count: Int) -> String {
+        "\(count) \(self == .commands ? "条" : "个")\(searchNoun(plural: count != 1))"
     }
 }

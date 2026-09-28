@@ -21,13 +21,13 @@ struct StorageSettings: View {
             groups
         }
         .task { await recount() }
-        .alert("Clean up now?", isPresented: $confirming) {
-            Button("Cancel", role: .cancel) {}
-            Button("Clean up", role: .destructive) { Task { await sweep() } }
+        .alert("立即清理？", isPresented: $confirming) {
+            Button("取消", role: .cancel) {}
+            Button("清理", role: .destructive) { Task { await sweep() } }
         } message: {
             Text(
-                "Backup copies older than 30 days go to the Trash, and records for things that no "
-                + "longer exist are forgotten. Nothing you wrote is touched."
+                "超过 30 天的备份副本会移到废纸篓，已不存在的内容留下的记录会被清除。"
+                + "你写的内容不会被动到。"
             )
         }
     }
@@ -35,43 +35,42 @@ struct StorageSettings: View {
     @ViewBuilder
     private var groups: some View {
         SettingsGroup(
-            title: "What Loadout keeps",
-            note: "A copy of every file it is about to change, plus small records so anything "
-                + "switched off can be put back exactly as it was.",
-            footnote: "Copies older than 30 days are swept at launch, to the Trash — so nothing is "
-                + "really gone until you empty it."
+            title: "Loadout 保存的内容",
+            note: "每个即将修改的文件都会先存一份副本，另外还有一些小记录，"
+                + "让停用的内容能原样恢复。",
+            footnote: "超过 30 天的副本会在启动时移到废纸篓，清倒废纸篓之前都不会真的消失。"
         ) {
-            SettingsRow(label: "Snapshots") {
+            SettingsRow(label: "快照") {
                 if isCounting {
                     ProgressView().controlSize(.small)
                 } else {
                     SettingsValue(text: "\(report.snapshots)")
                 }
             }
-            SettingsRow(label: "Size on disk") {
+            SettingsRow(label: "占用空间") {
                 SettingsValue(
                     text: ByteCountFormatter.string(fromByteCount: report.bytes, countStyle: .file)
                 )
             }
             if report.strandedRecords > 0 {
                 SettingsRow(
-                    label: "Records for things that are gone",
-                    sub: "Nothing on this Mac refers to them any more"
+                    label: "已不存在的内容留下的记录",
+                    sub: "这台 Mac 上已经没有东西用到它们"
                 ) {
                     SettingsValue(text: "\(report.strandedRecords)")
                 }
             }
-            SettingsRow(label: "Folder", mono: true) {
-                SettingsLinkButton(title: "Reveal", help: model.paths.backups.path) {
+            SettingsRow(label: "文件夹", mono: true) {
+                SettingsLinkButton(title: "在访达中显示", help: model.paths.backups.path) {
                     model.revealBackups()
                 }
             }
             SettingsRow(
-                label: "Clean up now",
-                sub: report.isEmpty ? "Nothing to clear right now" : resultMessage,
+                label: "立即清理",
+                sub: report.isEmpty ? "现在没有需要清理的内容" : resultMessage,
                 dividing: false
             ) {
-                Button("Clean up") { confirming = true }
+                Button("清理") { confirming = true }
                     .buttonStyle(V2ToolbarButtonStyle(
                         prominent: false, enabled: !(isClearing || isCounting || report.isEmpty)
                     ))
@@ -82,13 +81,11 @@ struct StorageSettings: View {
 
         if !report.unreadableRecords.isEmpty {
             SettingsGroup(
-                title: "Couldn’t be read",
-                note: "These are Loadout’s own records, and something switched off may be written "
-                    + "in them.",
+                title: "无法读取",
+                note: "这些是 Loadout 自己的记录，里面可能记着某些已停用的内容。",
                 // Never swept, on purpose: a file nobody can read is a question, and deleting it
                 // answers it the wrong way.
-                footnote: "They are left alone rather than cleared, so nothing is lost while the "
-                    + "cause is unknown."
+                footnote: "原因查明之前不会清理它们，免得丢东西。"
             ) {
                 ForEach(Array(report.unreadableRecords.enumerated()), id: \.element) { index, url in
                     SettingsRow(
@@ -96,7 +93,7 @@ struct StorageSettings: View {
                         mono: true,
                         dividing: index < report.unreadableRecords.count - 1
                     ) {
-                        SettingsLinkButton(title: "Reveal") { model.revealBackups() }
+                        SettingsLinkButton(title: "在访达中显示") { model.revealBackups() }
                     }
                 }
             }
@@ -126,11 +123,11 @@ struct StorageSettings: View {
     private func describe(_ done: Housekeeping.Report) -> String {
         var parts: [String] = []
         if done.expiredSnapshots > 0 {
-            parts.append("\(done.expiredSnapshots) \(done.expiredSnapshots == 1 ? "snapshot" : "snapshots")")
+            parts.append("\(done.expiredSnapshots) 个快照")
         }
         if done.strandedRecords > 0 {
-            parts.append("\(done.strandedRecords) \(done.strandedRecords == 1 ? "record" : "records")")
+            parts.append("\(done.strandedRecords) 条记录")
         }
-        return parts.isEmpty ? "Nothing to clear." : "Cleared " + parts.joined(separator: " and ") + "."
+        return parts.isEmpty ? "没有需要清理的内容。" : "已清理 " + parts.joined(separator: "和 ") + "。"
     }
 }

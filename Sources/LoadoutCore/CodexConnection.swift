@@ -13,7 +13,7 @@ final class CodexConnection {
 
     init(paths: Paths, timeout: TimeInterval = 15) throws {
         guard let executable = paths.codexExecutable else {
-            throw LoadoutError.io("Install or update Codex to read and manage its plugins.")
+            throw LoadoutError.io("安装或更新 Codex 后才能读取和管理它的插件。")
         }
         deadline = Date().addingTimeInterval(timeout)
         process.executableURL = executable
@@ -68,24 +68,24 @@ final class CodexConnection {
                 guard let object = try JSONSerialization.jsonObject(with: line) as? [String: Any],
                       object["id"] as? Int == id else { continue }
                 if let error = object["error"] as? [String: Any] {
-                    throw LoadoutError.io("Codex couldn't complete \(method): \(error["message"] as? String ?? "update Codex and try again").")
+                    throw LoadoutError.io("Codex 无法完成 \(method)：\(error["message"] as? String ?? "请更新 Codex 后重试")。")
                 }
                 guard let result = object["result"] as? [String: Any] else {
-                    throw LoadoutError.io("Codex returned an unsupported response. Update Codex and try again.")
+                    throw LoadoutError.io("Codex 返回了不支持的响应。请更新 Codex 后重试。")
                 }
                 return result
             }
             var descriptor = pollfd(fd: output.fileHandleForReading.fileDescriptor, events: Int16(POLLIN), revents: 0)
             let ready = poll(&descriptor, 1, 100)
             if ready < 0 && errno == EINTR { continue }
-            guard ready >= 0 else { throw LoadoutError.io("Couldn't read Codex's plugin response.") }
+            guard ready >= 0 else { throw LoadoutError.io("无法读取 Codex 的插件响应。") }
             if ready == 0 { continue }
             var bytes = [UInt8](repeating: 0, count: 65_536)
             let count = Darwin.read(descriptor.fd, &bytes, bytes.count)
-            guard count > 0 else { throw LoadoutError.io("Codex closed its plugin connection. Update Codex and try again.") }
+            guard count > 0 else { throw LoadoutError.io("Codex 关闭了插件连接。请更新 Codex 后重试。") }
             buffer.append(contentsOf: bytes.prefix(count))
-            guard buffer.count < 16 * 1024 * 1024 else { throw LoadoutError.io("Codex's plugin response was too large.") }
+            guard buffer.count < 16 * 1024 * 1024 else { throw LoadoutError.io("Codex 的插件响应太大。") }
         }
-        throw LoadoutError.io("Codex took too long to respond. Try reloading the inventory.")
+        throw LoadoutError.io("Codex 响应超时。请尝试重新加载清单。")
     }
 }

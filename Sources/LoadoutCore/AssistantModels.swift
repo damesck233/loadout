@@ -37,20 +37,20 @@ public enum AssistantModels {
         switch assistantID {
         case "claude":
             return [
-                Model(id: "opus", label: "Opus", note: "The most capable, and the slowest"),
-                Model(id: "sonnet", label: "Sonnet", note: "The everyday one"),
-                Model(id: "haiku", label: "Haiku", note: "Fast and cheap, for small jobs"),
+                Model(id: "opus", label: "Opus", note: "能力最强，也最慢"),
+                Model(id: "sonnet", label: "Sonnet", note: "日常首选"),
+                Model(id: "haiku", label: "Haiku", note: "又快又便宜，适合小活"),
             ]
         case "codex":
             return [
-                Model(id: "gpt-5.6-sol", label: "GPT-5.6 Sol", note: "The most capable"),
-                Model(id: "gpt-5.6-terra", label: "GPT-5.6 Terra", note: "Balanced, for everyday work"),
-                Model(id: "gpt-5.6-luna", label: "GPT-5.6 Luna", note: "Fast and cheap"),
+                Model(id: "gpt-5.6-sol", label: "GPT-5.6 Sol", note: "能力最强"),
+                Model(id: "gpt-5.6-terra", label: "GPT-5.6 Terra", note: "均衡，适合日常工作"),
+                Model(id: "gpt-5.6-luna", label: "GPT-5.6 Luna", note: "又快又便宜"),
             ]
         case "opencode":
             return [
-                Model(id: "anthropic/claude-opus-4-5", label: "Claude Opus", note: "Through opencode"),
-                Model(id: "openai/gpt-5", label: "GPT-5", note: "Through opencode"),
+                Model(id: "anthropic/claude-opus-4-5", label: "Claude Opus", note: "通过 opencode"),
+                Model(id: "openai/gpt-5", label: "GPT-5", note: "通过 opencode"),
             ]
         default:
             return []

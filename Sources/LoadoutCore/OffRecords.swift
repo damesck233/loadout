@@ -228,7 +228,7 @@ public struct OffRecords: Sendable {
             try fm.createDirectory(at: paths.support, withIntermediateDirectories: true)
             try encoder.encode(value).write(to: url, options: .atomic)
         } catch {
-            throw LoadoutError.io("Couldn't write \(url.lastPathComponent): \(error.localizedDescription)")
+            throw LoadoutError.io("无法写入 \(url.lastPathComponent)：\(error.localizedDescription)")
         }
     }
 }

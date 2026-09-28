@@ -201,7 +201,7 @@ public struct InventoryScanner: Sendable {
                 // and until that is answered it loads none of them — so showing this as on would be
                 // the app claiming something the assistant is not doing. Off, and said why.
                 item.enabled = false
-                item.warning = "Not approved yet, so Claude is not loading it. Turning it on here is the answer it is waiting for."
+                item.warning = "还没批准，所以 Claude 没有加载它。在这里打开它，就是 Claude 在等的那个答复。"
             }
             return item
         }
@@ -258,7 +258,7 @@ public struct InventoryScanner: Sendable {
         let folderName = folder.lastPathComponent
         var warning = front.warning
         if let declared = front.name, declared != folderName {
-            warning = warning ?? "The name in the frontmatter (\(declared)) doesn't match the folder (\(folderName))."
+            warning = warning ?? "frontmatter 里的名称（\(declared)）和文件夹名（\(folderName)）不一致。"
         }
         return Item(
             id: "skill:\(origin.label):\(folderName)",
@@ -338,7 +338,7 @@ public struct InventoryScanner: Sendable {
         // with its file name will not answer to what the list shows.
         var warning = front.structuralWarning
         if kind == .agent, let declared = front.name, declared != stem {
-            warning = warning ?? "The name in the frontmatter (\(declared)) doesn't match the file (\(stem))."
+            warning = warning ?? "frontmatter 里的名称（\(declared)）和文件名（\(stem)）不一致。"
         }
         return Item(
             id: "\(kind.rawValue):\(origin.label):\(stem)",
@@ -548,7 +548,7 @@ public struct InventoryScanner: Sendable {
     }
 
     private func mcpItem(name: String, config: Any, origin: Origin) -> Item {
-        var description = "MCP server"
+        var description = "MCP 服务器"
         if let dict = config as? [String: Any] {
             if let command = dict["command"] as? String {
                 description = command

@@ -52,7 +52,7 @@ final class CommandTests: XCTestCase {
 
         let skill = InventoryScanner(paths: fixture.paths).scanAll().items
             .first { $0.kind == .skill && $0.name == "nameless" }!
-        XCTAssertEqual(skill.warning, "The frontmatter is missing the name field.")
+        XCTAssertEqual(skill.warning, "frontmatter 缺少 name 字段。")
     }
 
     // MARK: - AC10.5 / AC10.6 the switch

@@ -31,13 +31,13 @@ struct SettingsPane: View {
 
         var title: String {
             switch self {
-            case .projects: return "Projects"
-            case .appearance: return "Appearance"
-            case .usage: return "Usage"
-            case .assistants: return "Assistants"
-            case .storage: return "Storage"
-            case .updates: return "Updates"
-            case .help: return "Help"
+            case .projects: return "项目"
+            case .appearance: return "外观"
+            case .usage: return "使用情况"
+            case .assistants: return "助手"
+            case .storage: return "存储"
+            case .updates: return "更新"
+            case .help: return "帮助"
             }
         }
 
@@ -74,7 +74,7 @@ struct SettingsPane: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Text("Settings")
+            Text("设置")
                 .font(.system(size: 15, weight: .semibold))
             Rectangle()
                 .fill(V2.hairline)
@@ -88,7 +88,7 @@ struct SettingsPane: View {
             // Said out loud, because the shortcut for leaving a screen that took over the window
             // is not something anybody should have to guess at.
             HStack(spacing: 4) {
-                Text("Press")
+                Text("按")
                 Text("esc")
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1)
@@ -96,7 +96,7 @@ struct SettingsPane: View {
                         RoundedRectangle(cornerRadius: 5, style: .continuous)
                             .fill(Color.white.opacity(0.07))
                     )
-                Text("to close")
+                Text("关闭")
             }
             .font(.system(size: 11))
             .foregroundStyle(V2.textFaint)
@@ -107,8 +107,8 @@ struct SettingsPane: View {
                     .frame(width: 26, height: 26)
             }
             .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-            .help("Close Settings (Esc)")
-            .accessibilityLabel("Close Settings")
+            .help("关闭设置（Esc）")
+            .accessibilityLabel("关闭设置")
             .pointingHand()
         }
         .padding(.horizontal, 16)

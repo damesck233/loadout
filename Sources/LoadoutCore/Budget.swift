@@ -55,16 +55,16 @@ public struct Budget: Equatable, Sendable {
     public var breaches: [String] {
         var found: [String] = []
         if nameCharacters > Budget.maxNameCharacters {
-            found.append("The name is \(nameCharacters) characters; the limit is \(Budget.maxNameCharacters).")
+            found.append("名称有 \(nameCharacters) 个字符，上限是 \(Budget.maxNameCharacters)。")
         }
         if descriptionCharacters > Budget.maxDescriptionCharacters {
-            found.append("The description is \(descriptionCharacters) characters; the limit is \(Budget.maxDescriptionCharacters).")
+            found.append("描述有 \(descriptionCharacters) 个字符，上限是 \(Budget.maxDescriptionCharacters)。")
         }
         if bodyLines > Budget.maxBodyLines {
-            found.append("The body is \(bodyLines) lines; Anthropic's guidance is under \(Budget.maxBodyLines). Move detail into reference files.")
+            found.append("正文有 \(bodyLines) 行，Anthropic 建议不超过 \(Budget.maxBodyLines) 行。把细节移到参考文件里。")
         }
         if bodyWords > Budget.maxBodyWords {
-            found.append("The body is \(bodyWords) words; the guidance is under \(Budget.maxBodyWords).")
+            found.append("正文有 \(bodyWords) 词，建议不超过 \(Budget.maxBodyWords) 词。")
         }
         return found
     }

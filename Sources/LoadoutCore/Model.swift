@@ -10,11 +10,11 @@ public enum ItemKind: String, Codable, Sendable, CaseIterable {
 
     public var label: String {
         switch self {
-        case .skill: return "Skill"
-        case .command: return "Command"
-        case .agent: return "Agent"
+        case .skill: return "技能"
+        case .command: return "命令"
+        case .agent: return "子代理"
         case .mcp: return "MCP"
-        case .plugin: return "Plugin"
+        case .plugin: return "插件"
         }
     }
 
@@ -243,19 +243,19 @@ public enum LoadoutError: LocalizedError, Equatable {
     public var errorDescription: String? {
         switch self {
         case .notEditable(let what):
-            return "\(what) comes from a plugin and is read-only. Use the plugin switch instead."
+            return "\(what) 来自插件，是只读的。请改用插件开关。"
         case .alreadyExists(let url):
-            return "Something already exists at \(url.path). Nothing was changed."
+            return "\(url.path) 已经有东西了。没有做任何更改。"
         case .invalidName(let name):
-            return "The name \"\(name)\" isn't valid. Use lowercase letters, numbers, and hyphens, like imark-review."
+            return "名称“\(name)”无效。只能用小写字母、数字和连字符，比如 imark-review。"
         case .missingField(let field):
-            return "The frontmatter is missing the \(field) field."
+            return "frontmatter 缺少 \(field) 字段。"
         case .backupFailed(let reason):
-            return "Couldn't make a backup, so nothing was written. \(reason)"
+            return "无法创建备份，所以什么都没写入。\(reason)"
         case .claudeNotFound:
-            return "Couldn't find an assistant CLI to run. Install Claude Code, Codex, Cursor, or opencode."
+            return "找不到可运行的助手 CLI。请安装 Claude Code、Codex、Cursor 或 opencode。"
         case .notFound(let what):
-            return "Couldn't find \(what)."
+            return "找不到 \(what)。"
         case .io(let reason):
             return reason
         case .invalidAssistantCLI(let reason):

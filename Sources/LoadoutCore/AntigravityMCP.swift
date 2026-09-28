@@ -44,7 +44,7 @@ struct AntigravityMCP {
 
     private func mutate(_ name: String, _ change: ([String: Any]) -> [String: Any]?) throws {
         guard var root = read() else {
-            throw LoadoutError.io("Couldn't read \(file.lastPathComponent).")
+            throw LoadoutError.io("无法读取 \(file.lastPathComponent)。")
         }
         var servers = root["mcpServers"] as? [String: Any] ?? [:]
         guard let entry = servers[name] as? [String: Any] else { throw LoadoutError.notFound(name) }
@@ -67,6 +67,6 @@ struct AntigravityMCP {
             return args.isEmpty ? command : command + " " + args.joined(separator: " ")
         }
         if let url = dict["serverUrl"] as? String ?? dict["url"] as? String { return url }
-        return "MCP server"
+        return "MCP 服务器"
     }
 }

@@ -140,23 +140,23 @@ struct ContentView: View {
         // consequence still differ — a folder goes to the Trash, a server is lines out of a
         // settings file — so the strings branch and the presentation does not.
         .alert(destructiveTitle, isPresented: $model.isConfirmingDelete) {
-            Button("Cancel", role: .cancel) {}
+            Button("取消", role: .cancel) {}
             if model.removesServerOnConfirm {
-                Button("Remove", role: .destructive) { model.removeSelectedServer() }
+                Button("移除", role: .destructive) { model.removeSelectedServer() }
             } else {
-                Button("Move to Trash", role: .destructive) { model.deleteSelected() }
+                Button("移到废纸篓", role: .destructive) { model.deleteSelected() }
             }
         } message: {
             Text(destructiveMessage)
         }
         .alert(
-            "Something went wrong",
+            "出了点问题",
             isPresented: Binding(
                 get: { model.errorMessage != nil },
                 set: { if !$0 { model.errorMessage = nil } }
             )
         ) {
-            Button("OK") { model.errorMessage = nil }
+            Button("好") { model.errorMessage = nil }
         } message: {
             Text(model.errorMessage ?? "")
         }
@@ -170,17 +170,17 @@ struct ContentView: View {
     private var destructiveTitle: String {
         let name = model.selected?.name ?? ""
         return model.removesServerOnConfirm
-            ? "Remove \(name) from the assistant's settings?"
-            : "Move \(name) to the Trash?"
+            ? "要从助手的设置中移除 \(name) 吗？"
+            : "要将 \(name) 移到废纸篓吗？"
     }
 
     private var destructiveMessage: String {
         model.removesServerOnConfirm
             ? """
-            This server is a few lines inside the assistant's own settings rather than a file, so \
-            there is no Trash to take it back from. Loadout copies that file to its backups first.
+            这个服务器不是一个文件，而是助手自身设置里的几行内容，\
+            所以没法从废纸篓里找回。Loadout 会先把那个文件复制到备份里。
             """
-            : "The folder moves to the Trash, and a copy stays in the Loadout backups."
+            : "文件夹会移到废纸篓，Loadout 的备份里也会留一份副本。"
     }
 
     /// The hairline between the columns, with a 12pt invisible grab strip straddling it: drag to
@@ -291,7 +291,7 @@ struct TitleBar: View {
                     .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
-        .help("Loadout is free, and stays free. If it saves you time, a coffee keeps the next release coming")
+        .help("Loadout 免费，以后也免费。如果它帮你省了时间，请我喝杯咖啡，下个版本就有动力了")
         .pointingHand()
     }
 
@@ -299,7 +299,7 @@ struct TitleBar: View {
         Button { model.toggleChat() } label: {
             HStack(spacing: 6) {
                 Image(systemName: "bubble.left.and.bubble.right")
-                if !compact { Text("Chat") }
+                if !compact { Text("对话") }
             }
             .font(.system(size: 12.5))
             .foregroundStyle(model.showsAskPanel ? V2.text : V2.textDim)
@@ -311,8 +311,8 @@ struct TitleBar: View {
                 .strokeBorder(Color.white.opacity(0.10), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(model.showsAskPanel ? "Hide chat" : "Show chat")
-        .help(model.showsAskPanel ? "Hide chat" : "Chat about your setup")
+        .accessibilityLabel(model.showsAskPanel ? "隐藏对话" : "显示对话")
+        .help(model.showsAskPanel ? "隐藏对话" : "聊聊你的配置")
         .pointingHand()
     }
 
@@ -320,9 +320,9 @@ struct TitleBar: View {
     /// created here, so that tab keeps the skill wording rather than offering a lie.
     private var newButtonTitle: String {
         switch model.selection {
-        case .commands: return "New command"
-        case .agents: return "New subagent"
-        default: return "New skill"
+        case .commands: return "新建命令"
+        case .agents: return "新建子代理"
+        default: return "新建技能"
         }
     }
 
@@ -341,7 +341,7 @@ struct TitleBar: View {
                 .contentShape(RoundedRectangle(cornerRadius: 7))
         }
         .buttonStyle(.plain)
-        .help(sidebarVisible ? "Hide the sidebar" : "Show the sidebar")
+        .help(sidebarVisible ? "隐藏边栏" : "显示边栏")
         .pointingHand()
     }
 
@@ -368,7 +368,7 @@ struct TitleBar: View {
             .contentShape(RoundedRectangle(cornerRadius: 7))
         }
         .buttonStyle(.plain)
-        .help("\(newButtonTitle) (⌘N)")
+        .help("\(newButtonTitle)（⌘N）")
         .pointingHand()
     }
 }

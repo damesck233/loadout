@@ -50,9 +50,9 @@ final class BudgetTests: XCTestCase {
 
         XCTAssertTrue(budget.isOverBudget)
         XCTAssertEqual(budget.breaches.count, 1)
-        XCTAssertTrue(budget.breaches[0].contains("501 lines"))
+        XCTAssertTrue(budget.breaches[0].contains("501 行"))
         XCTAssertTrue(
-            budget.breaches[0].contains("reference files"),
+            budget.breaches[0].contains("参考文件"),
             "the message has to say what to do, not just that a number is too big"
         )
     }
@@ -69,7 +69,7 @@ final class BudgetTests: XCTestCase {
             document: document(description: String(repeating: "d", count: 1_025), body: "corpo")
         )
 
-        XCTAssertTrue(budget.breaches.contains { $0.contains("1025 characters") })
+        XCTAssertTrue(budget.breaches.contains { $0.contains("1025 个字符") })
     }
 
     func testANameOverSixtyFourIsFlagged() {
@@ -77,7 +77,7 @@ final class BudgetTests: XCTestCase {
             document: document(name: String(repeating: "n", count: 65), description: "x", body: "y")
         )
 
-        XCTAssertTrue(budget.breaches.contains { $0.contains("65 characters") })
+        XCTAssertTrue(budget.breaches.contains { $0.contains("65 个字符") })
     }
 
     func testEveryBrokenLimitIsListed() {

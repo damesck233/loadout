@@ -20,9 +20,9 @@ struct PluginManagerView: View {
         .overlay {
             if model.plugins.isEmpty {
                 ContentUnavailableView(
-                    "No plugins installed",
+                    "没有安装插件",
                     systemImage: "puzzlepiece.extension",
-                    description: Text("Plugins installed through Claude Code or Codex will show up here.")
+                    description: Text("通过 Claude Code 或 Codex 安装的插件会显示在这里。")
                 )
             }
         }
@@ -56,19 +56,19 @@ struct PluginManagerRow: View {
     /// repository decided about this one, which is the more useful thing to know there.
     private var subtitle: String {
         if let repositoryChoice = plugin.repositoryChoice, let name = model.context?.name {
-            return "v\(plugin.version) · \(repositoryChoice ? "on" : "off") in \(name)"
+            return "v\(plugin.version) · 在 \(name) 中\(repositoryChoice ? "已启用" : "已停用")"
         }
         return model.context == nil
-            ? "\(plugin.assistantLabel) · \(itemCount) \(itemCount == 1 ? "item" : "items") · v\(plugin.version)"
-            : "\(plugin.assistantLabel) · v\(plugin.version) · global"
+            ? "\(plugin.assistantLabel) · \(itemCount) 项 · v\(plugin.version)"
+            : "\(plugin.assistantLabel) · v\(plugin.version) · 全局"
     }
 
     /// Why the switch is not yours to flip here, or nil when it is.
     private func repositoryVerdict(_ plugin: PluginInfo) -> String? {
         guard let choice = plugin.repositoryChoice, let name = model.context?.name else { return nil }
         return """
-        \(name) settles this one in its own settings, which Claude reads after yours, so it is \
-        \(choice ? "on" : "off") while you work there whatever you choose
+        \(name) 在自己的设置里定下了这个插件，Claude 会在你的设置之后读取它，所以在那里工作时，\
+        不管你怎么选，它都是\(choice ? "启用" : "停用")的
         """
     }
 
@@ -111,14 +111,14 @@ struct PluginManagerRow: View {
                 .disabled(plugin.repositoryChoice != nil || plugin.toggleUnavailableReason != nil)
                 .help(plugin.toggleUnavailableReason ?? repositoryVerdict(plugin) ?? (
                     plugin.enabled
-                        ? "Turn off the \(plugin.name) plugin in \(plugin.assistantLabel)"
-                        : "Turn on the \(plugin.name) plugin in \(plugin.assistantLabel)"
+                        ? "在 \(plugin.assistantLabel) 中停用 \(plugin.name) 插件"
+                        : "在 \(plugin.assistantLabel) 中启用 \(plugin.name) 插件"
                 ))
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .help("\(plugin.name) — v\(plugin.version), \(itemCount) \(itemCount == 1 ? "item" : "items")")
+        .help("\(plugin.name)：v\(plugin.version)，\(itemCount) 项")
     }
 }
 
@@ -150,14 +150,14 @@ struct PluginDetailView: View {
                     // holds only that repository's own things, so there was nothing below the
                     // sentence pointing at it.
                     Text(switchable.isEmpty
-                        ? "The whole plugin is off, so nothing it ships is loaded."
-                        : "The whole plugin is off, so nothing here is loaded. The switches below are each item's own choice, kept for when you turn the plugin back on.")
+                        ? "整个插件已停用，它带的东西都不会加载。"
+                        : "整个插件已停用，这里的东西都不会加载。下面的开关是每一项各自的选择，留到你重新启用插件时生效。")
                         .font(.system(size: 12))
                         .foregroundStyle(V2.amber)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !switchable.isEmpty {
-                    section("Skills, commands and agents", items: switchable, switchable: true)
+                    section("技能、命令和子代理", items: switchable, switchable: true)
                 }
                 whereItLives
                 if !rest.isEmpty {
@@ -165,7 +165,7 @@ struct PluginDetailView: View {
                     // is where they are switched — so they are listed without one. MCP servers are
                     // not named here: no plugin on this machine declares any, and promising a list
                     // the scanner does not read was a promise the screen could not keep.
-                    section("Also ships", items: rest, switchable: false)
+                    section("还附带", items: rest, switchable: false)
                 }
             }
             .padding(20)
@@ -179,8 +179,8 @@ struct PluginDetailView: View {
     private var repositorySettles: String? {
         guard let choice = plugin.repositoryChoice, let name = model.context?.name else { return nil }
         return """
-        \(name) keeps this plugin \(choice ? "on" : "off") in its own settings, which Claude reads \
-        after yours. Your switch cannot change it while you are working there.
+        \(name) 在自己的设置里让这个插件保持\(choice ? "启用" : "停用")，Claude 会在你的设置之后\
+        读取它。你在那里工作时，你的开关改变不了它。
         """
     }
 
@@ -193,10 +193,10 @@ struct PluginDetailView: View {
                 MiniSwitch(on: plugin.enabled, width: 40, height: 24) { model.togglePlugin(plugin) }
                     .disabled(plugin.repositoryChoice != nil || plugin.toggleUnavailableReason != nil)
                     .help(plugin.toggleUnavailableReason ?? repositorySettles ?? (
-                        plugin.enabled ? "Turn the whole plugin off" : "Turn the whole plugin on"
+                        plugin.enabled ? "停用整个插件" : "启用整个插件"
                     ))
             }
-            Text("\(plugin.assistantLabel) · v\(plugin.version)\(plugin.marketplace.isEmpty ? "" : " · from \(plugin.marketplace)")")
+            Text("\(plugin.assistantLabel) · v\(plugin.version)\(plugin.marketplace.isEmpty ? "" : " · 来自 \(plugin.marketplace)")")
                 .font(.system(size: 12))
                 .foregroundStyle(V2.textDim)
             // Said out loud rather than left to a tooltip: a switch that will not move needs a
@@ -218,19 +218,19 @@ struct PluginDetailView: View {
     /// this?" had no answer on the screen that was about it.
     private var whereItLives: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("THE PLUGIN ITSELF")
+            Text("插件本身")
                 .font(.system(size: 10.5, weight: .semibold))
                 .foregroundStyle(V2.textDim)
             VStack(spacing: 1) {
-                factRow("From", plugin.marketplace.isEmpty ? "an unnamed marketplace" : plugin.marketplace)
-                factRow("Version", plugin.version.isEmpty ? "not recorded" : "v\(plugin.version)")
-                factRow("Ships", model.pluginContents(plugin))
-                factRow("Location", model.readablePath(of: plugin), mono: true) {
-                    Button("Reveal") { model.revealPlugin(plugin) }
+                factRow("来源", plugin.marketplace.isEmpty ? "未命名的市场" : plugin.marketplace)
+                factRow("版本", plugin.version.isEmpty ? "未记录" : "v\(plugin.version)")
+                factRow("包含", model.pluginContents(plugin))
+                factRow("位置", model.readablePath(of: plugin), mono: true) {
+                    Button("在访达中显示") { model.revealPlugin(plugin) }
                         .buttonStyle(.plain)
                         .font(.system(size: 11.5))
                         .foregroundStyle(V2.link)
-                        .help("Show \(plugin.name)'s own folder in the Finder")
+                        .help("在访达中显示 \(plugin.name) 自己的文件夹")
                         .pointingHand()
                 }
             }
@@ -238,7 +238,7 @@ struct PluginDetailView: View {
                 Button {
                     model.removePlugin(plugin)
                 } label: {
-                    Text("Remove plugin…")
+                    Text("移除插件…")
                         .font(.system(size: 12.5, weight: .medium))
                         .foregroundStyle(V2.issue)
                         .padding(.horizontal, 12)
@@ -247,15 +247,15 @@ struct PluginDetailView: View {
                         .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(V2.issue.opacity(0.35), lineWidth: 0.5))
                 }
                 .buttonStyle(.plain)
-                .help("Uninstall \(plugin.name): its folder to the Trash and its entry out of Claude Code's register")
+                .help("卸载 \(plugin.name)：文件夹移到废纸篓，条目从 Claude Code 的登记表中移除")
                 .disabled(plugin.assistant != "claude")
                 .pointingHand()
                 // Said beside the button, not only inside the dialog it opens: switching off and
                 // removing are two different things, and somebody who only wants the plugin quiet
                 // should be able to tell before pressing anything.
                 Text(plugin.assistant == "codex"
-                     ? "To remove this plugin, open Codex. Switching it off here keeps its files."
-                     : "Switching it off above keeps the files. This takes them away.")
+                     ? "要移除这个插件，请打开 Codex。在这里停用会保留它的文件。"
+                     : "在上方停用会保留文件。这个按钮会把文件一起移走。")
                     .font(.system(size: 11.5))
                     .foregroundStyle(V2.textFaint)
             }
@@ -327,11 +327,11 @@ struct PluginDetailView: View {
                     .disabled(pluginIsOff)
                     .help(
                         pluginIsOff
-                            ? "Turn on the \(plugin.name) plugin before changing this \(item.kind.briefingNoun)"
+                            ? "先启用 \(plugin.name) 插件，才能修改这一项"
                             : item.enabled
-                                ? "Stop Claude loading \(item.name), leaving the rest of the plugin on. "
-                                    + "It stays off when the plugin updates."
-                                : "Let Claude load \(item.name) again. A plugin update leaves it on from now on."
+                                ? "让 Claude 不再加载 \(item.name)，插件其余部分保持启用。"
+                                    + "插件更新后它仍然保持停用。"
+                                : "让 Claude 重新加载 \(item.name)。以后插件更新也会让它保持启用。"
                     )
             }
         }
@@ -341,7 +341,7 @@ struct PluginDetailView: View {
         .background(V2.card, in: RoundedRectangle(cornerRadius: 7))
 
         if !switchable, item.kind == .agent {
-            row.help("Subagents are switched on the Agents tab, not here")
+            row.help("子代理要在“子代理”标签页里开关，不在这里")
         } else {
             row
         }

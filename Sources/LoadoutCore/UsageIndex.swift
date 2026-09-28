@@ -64,7 +64,7 @@ public final class UsageIndex: @unchecked Sendable {
         try? FileManager.default.removeItem(at: Self.asidePath(paths.index))
 
         guard sqlite3_open(paths.index.path, &db) == SQLITE_OK else {
-            throw LoadoutError.io("Couldn't open the index at \(paths.index.path).")
+            throw LoadoutError.io("无法打开位于 \(paths.index.path) 的索引。")
         }
         try exec(db, "PRAGMA journal_mode=WAL;")
 
@@ -530,7 +530,7 @@ public final class UsageIndex: @unchecked Sendable {
     private static func exec(_ handle: OpaquePointer?, _ sql: String) throws {
         var error: UnsafeMutablePointer<CChar>?
         if sqlite3_exec(handle, sql, nil, nil, &error) != SQLITE_OK {
-            let message = error.map { String(cString: $0) } ?? "unknown error"
+            let message = error.map { String(cString: $0) } ?? "未知错误"
             sqlite3_free(error)
             throw LoadoutError.io("SQLite: \(message)")
         }

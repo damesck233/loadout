@@ -332,7 +332,7 @@ extension AgentAndServerTests {
 
         XCTAssertEqual(
             item("mismatched", in: fixture, kind: .agent).warning,
-            "The name in the frontmatter (another-name) doesn't match the file (mismatched)."
+            "frontmatter 里的名称（another-name）和文件名（mismatched）不一致。"
         )
     }
 

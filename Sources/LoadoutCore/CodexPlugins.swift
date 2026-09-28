@@ -10,7 +10,7 @@ struct CodexPlugins {
         guard paths.codexExecutable != nil else {
             // Test homes and installations without plugins do not require a provider process.
             guard FileManager.default.fileExists(atPath: paths.codexPluginCache.path) else { return Inventory() }
-            return Inventory(diagnostics: ["Codex plugins could not be read. Install or update Codex, then reload."])
+            return Inventory(diagnostics: ["无法读取 Codex 插件。请安装或更新 Codex，然后重新载入。"])
         }
         do {
             let connection = try CodexConnection(paths: paths)
@@ -31,12 +31,12 @@ struct CodexPlugins {
         guard let marketplaces = installed["marketplaces"] as? [[String: Any]],
               let entries = skills["data"] as? [[String: Any]],
               let config = settings["config"] as? [String: Any] else {
-            throw LoadoutError.io("Codex returned an unsupported plugin inventory. Update Codex and reload.")
+            throw LoadoutError.io("Codex 返回的插件清单格式不受支持。请更新 Codex 并重新载入。")
         }
         var result = Inventory()
         result.items += Self.servers(in: config, file: paths.codexConfig)
         for error in installed["marketplaceLoadErrors"] as? [[String: Any]] ?? [] {
-            result.diagnostics.append("Codex marketplace: \(error["message"] as? String ?? "could not be read")")
+            result.diagnostics.append("Codex 插件市场：\(error["message"] as? String ?? "无法读取")")
         }
         let nativeSkills = entries.flatMap { $0["skills"] as? [[String: Any]] ?? [] }
         var overrides = (config["skills"] as? [String: Any])?["config"] as? [[String: Any]] ?? []
@@ -72,16 +72,16 @@ struct CodexPlugins {
                 }
                 var unavailable: String?
                 if source["type"] as? String == "remote" {
-                    unavailable = "This plugin is managed by your Codex workspace. Change it in Codex."
+                    unavailable = "这个插件由你的 Codex 工作区管理。请在 Codex 里更改。"
                 }
                 if let policy = summary["installPolicy"] as? String, policy == "REQUIRED" {
-                    unavailable = "Your Codex workspace requires this plugin."
+                    unavailable = "你的 Codex 工作区要求必须装这个插件。"
                 }
                 let origins = settings["origins"] as? [String: Any] ?? [:]
                 for (field, value) in origins where field.contains(key) && field.hasSuffix("enabled") {
                     let origin = (value as? [String: Any])?["name"] as? [String: Any]
                     if let type = origin?["type"] as? String, type != "user", type != "system" {
-                        unavailable = "This plugin's state is set by another Codex configuration layer. Change it there."
+                        unavailable = "这个插件的状态由另一层 Codex 配置决定。请到那里更改。"
                     }
                 }
                 let enabled = source["type"] as? String == "remote" ? parentEnabled
@@ -97,11 +97,11 @@ struct CodexPlugins {
                     do { files += try Self.manifestSkills(at: root) }
                     catch {
                         result.diagnostics.append("\(name): \(error.localizedDescription)")
-                        if files.isEmpty { plugin.toggleUnavailableReason = "The installed plugin files could not be read. Reload after repairing the installation in Codex." }
+                        if files.isEmpty { plugin.toggleUnavailableReason = "无法读取已安装的插件文件。请在 Codex 里修复安装后重新载入。" }
                     }
                 } else if source["type"] as? String != "remote" {
-                    plugin.toggleUnavailableReason = "Codex did not identify the installed version. Update Codex and reload."
-                    result.diagnostics.append("\(name): Codex did not identify the installed version.")
+                    plugin.toggleUnavailableReason = "Codex 没有识别出已安装的版本。请更新 Codex 并重新载入。"
+                    result.diagnostics.append("\(name)：Codex 没有识别出已安装的版本。")
                 }
                 result.plugins.append(plugin)
                 var seen = Set<String>()
@@ -129,7 +129,7 @@ struct CodexPlugins {
                                 try Backups(paths: paths).snapshot(paths.codexConfig)
                                 let response = try connection.call("skills/config/write", ["path": file.path, "enabled": false])
                                 guard response["effectiveEnabled"] as? Bool == false else {
-                                    throw LoadoutError.io("Codex could not restore the off choice for \(item.name). Another setting overrides it.")
+                                    throw LoadoutError.io("Codex 无法恢复 \(item.name) 的停用设置。另一项设置覆盖了它。")
                                 }
                                 overrides.append(["path": file.path, "enabled": false])
                                 choice = false
@@ -182,7 +182,7 @@ struct CodexPlugins {
         if let path = object?["skills"] as? String { locations = [path] }
         else if let paths = object?["skills"] as? [String] { locations = paths }
         else if object?["skills"] == nil { locations = ["skills"] }
-        else { throw LoadoutError.io("Unsupported skill locations in the plugin manifest.") }
+        else { throw LoadoutError.io("插件清单里的技能位置格式不受支持。") }
         var result: [URL] = []
         var visited = Set<String>()
         func walk(_ folder: URL) {
@@ -217,7 +217,7 @@ struct CodexPlugins {
         }), let version = layer["version"] as? String { params["expectedVersion"] = version }
         let response = try connection.call("config/value/write", params)
         if response["status"] as? String != "ok" {
-            throw LoadoutError.io("Codex saved the setting, but another configuration overrides it. Change the overriding setting in Codex.")
+            throw LoadoutError.io("Codex 已保存设置，但被另一项配置覆盖了。请在 Codex 里更改那项覆盖它的设置。")
         }
     }
 
@@ -228,7 +228,7 @@ struct CodexPlugins {
         let servers = config["mcp_servers"] as? [String: Any] ?? [:]
         return servers.compactMap { name, value -> Item? in
             guard let dict = value as? [String: Any] else { return nil }
-            var description = "MCP server"
+            var description = "MCP 服务器"
             if let command = dict["command"] as? String {
                 let args = dict["args"] as? [String] ?? []
                 description = args.isEmpty ? command : command + " " + args.joined(separator: " ")
@@ -264,12 +264,12 @@ struct CodexPlugins {
         }), let version = layer["version"] as? String { params["expectedVersion"] = version }
         let response = try connection.call("config/value/write", params)
         if response["status"] as? String != "ok" {
-            throw LoadoutError.io("Codex saved the setting, but another configuration overrides it. Change the overriding setting in Codex.")
+            throw LoadoutError.io("Codex 已保存设置，但被另一项配置覆盖了。请在 Codex 里更改那项覆盖它的设置。")
         }
     }
 
     func setSkill(_ item: Item, in plugin: PluginInfo, enabled: Bool) throws -> URL {
-        guard plugin.enabled else { throw LoadoutError.io("Turn on the \(plugin.name) plugin before changing this skill.") }
+        guard plugin.enabled else { throw LoadoutError.io("先启用 \(plugin.name) 插件，再更改这个技能。") }
         guard item.pluginID == plugin.id, let file = item.path,
               let relative = Self.relative(file, to: plugin.installPath) else { throw LoadoutError.notEditable(item.name) }
         let connection = try CodexConnection(paths: paths)
@@ -279,7 +279,7 @@ struct CodexPlugins {
         if let config = settings["config"] as? [String: Any],
            let plugins = config["plugins"] as? [String: Any],
            let entry = plugins[plugin.nativeKey] as? [String: Any], entry["enabled"] as? Bool == false {
-            throw LoadoutError.io("Turn on the \(plugin.name) plugin before changing this skill.")
+            throw LoadoutError.io("先启用 \(plugin.name) 插件，再更改这个技能。")
         }
         try Backups(paths: paths).snapshot(paths.codexConfig)
         let records = OffRecords(paths: paths)
@@ -293,7 +293,7 @@ struct CodexPlugins {
             throw error
         }
         guard response["effectiveEnabled"] as? Bool == enabled else {
-            throw LoadoutError.io("Another Codex setting overrides this skill. Change it in Codex, then reload.")
+            throw LoadoutError.io("另一项 Codex 设置覆盖了这个技能。请在 Codex 里更改，然后重新载入。")
         }
         if enabled { try records.forgetPluginEntry(relative, in: plugin.id) }
         return file.deletingLastPathComponent()

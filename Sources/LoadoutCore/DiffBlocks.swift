@@ -42,11 +42,11 @@ public struct DiffBlock: Identifiable, Hashable, Sendable {
 
     /// What the block is called in the panel — "3 lines replaced", and so on.
     public var summary: String {
-        if isInsertion { return added.count == 1 ? "1 line added" : "\(added.count) lines added" }
-        if isDeletion { return removed.count == 1 ? "1 line removed" : "\(removed.count) lines removed" }
+        if isInsertion { return "新增 \(added.count) 行" }
+        if isDeletion { return "删除 \(removed.count) 行" }
         return removed.count == 1 && added.count == 1
-            ? "1 line changed"
-            : "\(removed.count) lines replaced by \(added.count)"
+            ? "修改 1 行"
+            : "\(removed.count) 行替换为 \(added.count) 行"
     }
 }
 

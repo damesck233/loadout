@@ -91,19 +91,19 @@ struct LoadoutApp: App {
             // Directly under "About Loadout", where every Mac app puts it and where a hand
             // looking for it goes first.
             CommandGroup(after: .appInfo) {
-                Button("Check for Updates…") { Updates.checkNow() }
+                Button("检查更新…") { Updates.checkNow() }
                 Divider()
-                Button(model.showsSettings ? "Hide Settings" : "Settings…") {
+                Button(model.showsSettings ? "隐藏设置" : "设置…") {
                     model.showsSettings.toggle()
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
             CommandGroup(replacing: .newItem) {
-                Button("New skill") { model.isCreating = true }
+                Button("新建技能") { model.isCreating = true }
                     .keyboardShortcut("n", modifiers: .command)
             }
             CommandGroup(after: .saveItem) {
-                Button("Save") { model.save() }
+                Button("保存") { model.save() }
                     .keyboardShortcut("s", modifiers: .command)
                     .disabled(!model.isDirty)
             }
@@ -114,18 +114,18 @@ struct LoadoutApp: App {
                 // In the View menu, with a shortcut, because the seam and the chip are both things
                 // you have to see before you can use them — and the menu is also where the state is
                 // legible without looking at the pane: the item names the direction it will move.
-                Button(detailsCollapsed ? "Show Details" : "Hide Details") {
+                Button(detailsCollapsed ? "显示详细信息" : "隐藏详细信息") {
                     withAnimation(DetailsDisclosure.easing) { detailsCollapsed.toggle() }
                 }
                 .keyboardShortcut("i", modifiers: [.option, .command])
                 Divider()
-                Button("Bigger Text") { readerFontSize = min(Self.readingSizes.upperBound, readerFontSize + 1) }
+                Button("放大文字") { readerFontSize = min(Self.readingSizes.upperBound, readerFontSize + 1) }
                     .keyboardShortcut("+", modifiers: .command)
                     .disabled(readerFontSize >= Self.readingSizes.upperBound)
-                Button("Smaller Text") { readerFontSize = max(Self.readingSizes.lowerBound, readerFontSize - 1) }
+                Button("缩小文字") { readerFontSize = max(Self.readingSizes.lowerBound, readerFontSize - 1) }
                     .keyboardShortcut("-", modifiers: .command)
                     .disabled(readerFontSize <= Self.readingSizes.lowerBound)
-                Button("Actual Size") { readerFontSize = Self.defaultReadingSize }
+                Button("实际大小") { readerFontSize = Self.defaultReadingSize }
                     .keyboardShortcut("0", modifiers: .command)
                     .disabled(readerFontSize == Self.defaultReadingSize)
                 Divider()
@@ -133,7 +133,7 @@ struct LoadoutApp: App {
             CommandGroup(after: .textEditing) {
                 // ⌘F goes to whichever search the eye is on: the editor's own find bar while
                 // the Edit mode is up, and otherwise the list's search field.
-                Button("Find") {
+                Button("查找") {
                     if !model.showsPreview, model.selected?.isEditable == true {
                         NotificationCenter.default.post(name: .loadoutEditorFind, object: nil)
                     } else {
@@ -148,26 +148,26 @@ struct LoadoutApp: App {
             // Where macOS has taught everybody to look when an app misbehaves. The same report as
             // the one in Settings › Help, so there is one door in two places rather than two doors.
             CommandGroup(replacing: .help) {
-                Button("Loadout Guide") { BugReport.openGuide() }
-                Button("Report a Bug…") { BugReport.open(model) }
+                Button("Loadout 使用指南") { BugReport.openGuide() }
+                Button("报告问题…") { BugReport.open(model) }
             }
             CommandMenu("Loadout") {
                 ForEach(model.assistants) { assistant in
-                    Button("Sync all with \(assistant.label) (\(model.gaps(for: assistant).count))") {
+                    Button("全部同步到 \(assistant.label)（\(model.gaps(for: assistant).count)）") {
                         model.syncAll(to: assistant)
                     }
                     .disabled(model.gaps(for: assistant).isEmpty)
                 }
                 Divider()
-                Button("Reload from disk") { model.reload() }
+                Button("从磁盘重新载入") { model.reload() }
                     .keyboardShortcut("r", modifiers: .command)
-                Button("Index full history") { model.refreshUsage(fullHistory: true) }
+                Button("为全部历史建立索引") { model.refreshUsage(fullHistory: true) }
                 Divider()
-                Button("Show backups in Finder") { model.revealBackups() }
-                Button("Show in Finder") { model.revealInFinder() }
+                Button("在访达中显示备份") { model.revealBackups() }
+                Button("在访达中显示") { model.revealInFinder() }
                     .keyboardShortcut("r", modifiers: [.command, .shift])
                 Divider()
-                Button("Move selection to Trash") { model.isConfirmingDelete = true }
+                Button("将所选项移到废纸篓") { model.isConfirmingDelete = true }
                     .keyboardShortcut(.delete, modifiers: .command)
                     // MCP servers live inside ~/.claude.json, not in a folder of their own,
                     // so there is nothing to trash; with no selection there is nothing at all.

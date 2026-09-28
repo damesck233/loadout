@@ -10,19 +10,19 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             AppearanceTab()
-                .tabItem { Label("Appearance", systemImage: "paintpalette") }
+                .tabItem { Label("外观", systemImage: "paintpalette") }
             ProjectsTab(model: model)
-                .tabItem { Label("Projects", systemImage: "folder") }
+                .tabItem { Label("项目", systemImage: "folder") }
             UsageTab(model: model)
-                .tabItem { Label("Usage", systemImage: "chart.bar") }
+                .tabItem { Label("使用情况", systemImage: "chart.bar") }
             AssistantsTab(model: model)
-                .tabItem { Label("Assistants", systemImage: "person.2") }
+                .tabItem { Label("助手", systemImage: "person.2") }
             StorageTab(model: model)
-                .tabItem { Label("Storage", systemImage: "internaldrive") }
+                .tabItem { Label("存储", systemImage: "internaldrive") }
             UpdatesTab()
-                .tabItem { Label("Updates", systemImage: "arrow.down.circle") }
+                .tabItem { Label("更新", systemImage: "arrow.down.circle") }
             HelpTab(model: model)
-                .tabItem { Label("Help", systemImage: "questionmark.circle") }
+                .tabItem { Label("帮助", systemImage: "questionmark.circle") }
         }
         .frame(width: 520, height: 400)
     }
@@ -109,18 +109,18 @@ struct AppearanceTab: View {
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("Theme")
+                Text("主题")
             } footer: {
                 // Named in words as well, because a ring around a circle says *which* one is on
                 // but not what it is called — and the tooltips are the only other place the
                 // names appear.
-                Text("\(themes.name.hint). The window changes as you pick, and the choice is remembered for next launch.")
+                Text("\(themes.name.hint)。选中后窗口立即变化，下次启动时仍会沿用。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             Section {
-                LabeledContent("Text size") {
+                LabeledContent("文字大小") {
                     HStack(spacing: 8) {
                         Slider(value: $readerFontSize, in: 12...22, step: 1)
                             .frame(width: 180)
@@ -130,22 +130,22 @@ struct AppearanceTab: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                Picker("Typeface", selection: $readerFont) {
-                    Text("System").tag("system")
-                    Text("Serif").tag("serif")
-                    Text("Monospaced").tag("mono")
+                Picker("字体", selection: $readerFont) {
+                    Text("系统").tag("system")
+                    Text("衬线").tag("serif")
+                    Text("等宽").tag("mono")
                 }
                 .pointingHand()
-                Picker("Reading background", selection: $readerBackground) {
-                    Text("Card").tag("card")
-                    Text("Darker").tag("darker")
-                    Text("Ink").tag("ink")
+                Picker("阅读背景", selection: $readerBackground) {
+                    Text("卡片").tag("card")
+                    Text("更暗").tag("darker")
+                    Text("墨黑").tag("ink")
                 }
                 .pointingHand()
             } header: {
-                Text("Reading")
+                Text("阅读")
             } footer: {
-                Text("How a document reads in the pane on the right. ⌘+ and ⌘− change the size from anywhere; ⌘0 puts it back.")
+                Text("右侧面板里文档的显示方式。在任何地方按 ⌘+ 和 ⌘− 都能调整大小，⌘0 恢复默认。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -196,7 +196,7 @@ struct ProjectsTab: View {
         Form {
             Section {
                 if model.projectRoots.folders.isEmpty {
-                    Text("No folders yet, so Loadout has no projects to show — only what is loaded globally.")
+                    Text("还没有添加文件夹，所以 Loadout 没有项目可显示，只列出全局加载的内容。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -213,15 +213,15 @@ struct ProjectsTab: View {
                                 Image(systemName: "minus.circle")
                             }
                             .buttonStyle(.borderless)
-                            .help("Stop looking in \(display(folder))")
+                            .help("不再查找 \(display(folder))")
                             .pointingHand()
                         }
                     }
                 }
 
                 HStack {
-                    Button("Add folder…") { add() }
-                        .help("Choose a folder that holds your repositories, or a repository itself")
+                    Button("添加文件夹…") { add() }
+                        .help("选择存放代码仓库的文件夹，也可以直接选某个仓库")
                         .pointingHand()
                     Spacer()
                     Text(found)
@@ -229,14 +229,12 @@ struct ProjectsTab: View {
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                Text("Where your projects live")
+                Text("项目放在哪里")
             } footer: {
                 Text(
-                    "Loadout looks inside these for repositories — a folder with a .git or a "
-                    + ".claude in it — up to \(ProjectRoots.searchDepth) levels down, and a folder "
-                    + "that is one itself counts. Each project's own skills and "
-                    + "commands then show up when you pick it from the scope button at the top of "
-                    + "the list."
+                    "Loadout 会在这些文件夹里查找代码仓库，也就是含有 .git 或 .claude 的文件夹，"
+                    + "最多向下 \(ProjectRoots.searchDepth) 层。文件夹本身是仓库的也算。"
+                    + "之后在列表顶部的范围按钮里选中某个项目，就能看到它自己的技能和命令。"
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -248,7 +246,7 @@ struct ProjectsTab: View {
 
     private var found: String {
         let count = model.projects.count
-        return "\(count) \(count == 1 ? "project" : "projects") found"
+        return "找到 \(count) 个项目"
     }
 
     private func display(_ url: URL) -> String {
@@ -260,8 +258,8 @@ struct ProjectsTab: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
-        panel.prompt = "Use folder"
-        panel.message = "Choose a folder that holds your repositories — or a repository itself."
+        panel.prompt = "使用此文件夹"
+        panel.message = "选择存放代码仓库的文件夹，也可以直接选某个仓库。"
         guard panel.runModal() == .OK else { return }
         // Appended rather than replacing, and a folder chosen twice is not added twice.
         var folders = model.projectRoots.folders
@@ -285,10 +283,10 @@ struct UsageTab: View {
     @AppStorage("usageWindowDays") private var windowRaw: String = "90"
 
     private static let options: [(label: String, value: String)] = [
-        ("Last 30 days", "30"),
-        ("Last 90 days", "90"),
-        ("Last year", "365"),
-        ("Everything", "all"),
+        ("最近 30 天", "30"),
+        ("最近 90 天", "90"),
+        ("最近一年", "365"),
+        ("全部", "all"),
     ]
 
     private var windowDays: Int? {
@@ -302,24 +300,24 @@ struct UsageTab: View {
 
     var body: some View {
         Form {
-            Picker("Count sessions from", selection: $windowRaw) {
+            Picker("统计会话的时间范围", selection: $windowRaw) {
                 ForEach(Self.options, id: \.value) { option in
                     Text(option.label).tag(option.value)
                 }
             }
             .onChange(of: windowRaw) { _, _ in model.reindexUsage(windowDays: windowDays) }
-            .help("How far back to read each assistant's sessions for usage counts; stored in this Mac's preferences")
+            .help("统计使用次数时往回读取各助手会话的时间范围，保存在这台 Mac 的偏好设置里")
             .pointingHand()
 
-            LabeledContent("Indexed sessions", value: "\(model.indexedFileCount)")
-            LabeledContent("Indexed events", value: "\(model.indexedEventCount)")
+            LabeledContent("已索引的会话", value: "\(model.indexedFileCount)")
+            LabeledContent("已索引的事件", value: "\(model.indexedEventCount)")
 
             Section {
                 ForEach(model.usageSources) { source in
                     UsageSourceRow(source: source)
                 }
             } header: {
-                Text("Where the counts come from. Which of these count is the same checkbox as in Assistants — this list only reports what was found.")
+                Text("计数的来源。哪些计入统计由“助手”里的同一个勾选框决定，这里只列出找到了什么。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .textCase(nil)
@@ -328,14 +326,14 @@ struct UsageTab: View {
             HStack {
                 if model.indexProgress != nil {
                     ProgressView().controlSize(.small)
-                    Text("Reindexing…")
+                    Text("正在重建索引…")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Reindex now") { model.reindexUsage(windowDays: windowDays) }
+                Button("立即重建索引") { model.reindexUsage(windowDays: windowDays) }
                     .disabled(model.indexProgress != nil)
-                    .help("Reread every assistant's sessions now, using the window chosen above")
+                    .help("按上面选的时间范围，马上重新读取所有助手的会话")
                     .pointingHand(enabled: model.indexProgress == nil)
             }
         }
@@ -354,8 +352,8 @@ private struct UsageSourceRow: View {
     private var detail: String {
         switch source.state {
         case .included, .excluded:
-            let sessions = "\(source.sessionCount) \(source.sessionCount == 1 ? "session" : "sessions")"
-            return "\(source.state.label) · \(sessions) · \(source.eventCount) events"
+            let sessions = "\(source.sessionCount) 个会话"
+            return "\(source.state.label) · \(sessions) · \(source.eventCount) 个事件"
         case .noHistory, .unsupported, .error:
             return source.state.label
         }
@@ -383,12 +381,12 @@ private struct UsageSourceRow: View {
 
     private var help: String {
         switch source.state {
-        case .included: return "Counted in every usage number."
-        case .excluded: return "Found and indexed, but not counted — unchecked in Assistants."
-        case .noHistory: return "Nothing on disk to read for this assistant."
+        case .included: return "计入所有使用次数。"
+        case .excluded: return "已找到并建立索引，但不计入统计：在“助手”里没有勾选。"
+        case .noHistory: return "磁盘上没有这个助手可读取的记录。"
         case .unsupported:
-            return "There is history here, but nothing in it proves a skill was used, so it "
-                + "contributes nothing rather than a misleading zero."
+            return "这里有历史记录，但其中没有能证明用过某个技能的内容，所以不计入统计，"
+                + "免得显示一个误导人的 0。"
         case .error(let message): return message
         }
     }
@@ -412,9 +410,9 @@ struct UpdatesTab: View {
 
     var body: some View {
         Form {
-            LabeledContent("Version", value: Updates.current ?? "Unreleased build")
+            LabeledContent("版本", value: Updates.current ?? "未发布的构建")
 
-            Toggle("Check for updates automatically", isOn: Binding(
+            Toggle("自动检查更新", isOn: Binding(
                 get: { checksAutomatically },
                 set: { newValue in
                     checksAutomatically = newValue
@@ -422,24 +420,22 @@ struct UpdatesTab: View {
                 }
             ))
             .help(
-                "Asks the release feed for a new version about once a day, and offers to install "
-                    + "it. No files and no identifiers are sent — and off means Loadout makes no "
-                    + "network call at all."
+                "大约每天向发布源询问一次有没有新版本，有就提示你安装。"
+                    + "不会发送任何文件或标识信息。关掉后，Loadout 完全不联网。"
             )
 
-            LabeledContent("Last checked", value: lastCheckLine)
+            LabeledContent("上次检查", value: lastCheckLine)
 
             HStack {
                 Spacer()
-                Button("Check now") { check() }
-                    .help("Ask right now, whether or not the automatic check is on")
+                Button("立即检查") { check() }
+                    .help("马上检查一次，不管自动检查有没有打开")
                     .pointingHand()
             }
 
             Text(
-                "An update is downloaded and installed by Loadout itself. It is only accepted if "
-                    + "it is signed with the key this copy was built with, so a tampered download "
-                    + "is refused rather than installed."
+                "更新由 Loadout 自己下载并安装。只有用构建这份副本时的同一把密钥签名的更新才会被接受，"
+                    + "被篡改过的下载会被拒绝，不会安装。"
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -451,7 +447,7 @@ struct UpdatesTab: View {
     /// Sparkle has no date until the first check completes, and "Never" is a truer answer for a
     /// fresh install than a date invented to fill the row.
     private var lastCheckLine: String {
-        guard let lastCheck else { return "Never" }
+        guard let lastCheck else { return "从未" }
         return lastCheck.formatted(date: .abbreviated, time: .shortened)
     }
 
@@ -479,12 +475,11 @@ struct AssistantsTab: View {
 
     var body: some View {
         SettingsGroup(
-            title: "Assistants",
-            note: "A checked assistant shows up in the list rows and the detail panel, and its "
-                + "sessions count towards \"uses\". Unchecking one does both: it disappears from "
-                + "the list and stops counting.",
-            footnote: "Nothing is deleted — check it again and the same numbers come back. Sharing "
-                + "and syncing keep working either way."
+            title: "助手",
+            note: "勾选的助手会显示在列表行和详情面板里，它的会话也计入使用次数。"
+                + "取消勾选则两样都停：从列表里消失，也不再计数。",
+            footnote: "不会删除任何东西，重新勾选后原来的数字都会回来。"
+                + "无论勾不勾选，共享和同步都照常工作。"
         ) {
             ForEach(Array(model.assistants.enumerated()), id: \.element.id) { index, assistant in
                 AssistantSettingsRow(
@@ -496,19 +491,19 @@ struct AssistantsTab: View {
         }
 
         SettingsGroup(
-            title: "Ask CLIs",
-            note: "What \"Ask\" in a skill's detail runs. The five built-ins show up on their own "
-                + "once installed; add anything else by hand."
+            title: "提问用的 CLI",
+            note: "技能详情里的“提问”会运行这些命令。五个内置的装好后会自动出现，"
+                + "其他的可以手动添加。"
         ) {
             ForEach(model.assistantCLIs) { cli in
                 AskCLIRow(model: model, cli: cli)
             }
             SettingsRow(
-                label: "Add a CLI of your own",
-                sub: "Point Loadout at any command that takes a prompt",
+                label: "添加自己的 CLI",
+                sub: "任何接受 prompt 的命令都可以交给 Loadout",
                 dividing: false
             ) {
-                Button("Add…") { model.isAddingAssistantCLI = true }
+                Button("添加…") { model.isAddingAssistantCLI = true }
                     .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
                     .pointingHand()
             }
@@ -540,7 +535,7 @@ private struct AskCLIRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(cli.label)
-                        Text(cli.isCustom ? "Custom" : "Built-in")
+                        Text(cli.isCustom ? "自定义" : "内置")
                             .font(.caption2)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
@@ -553,14 +548,14 @@ private struct AskCLIRow: View {
                 }
                 Spacer()
                 if testing { ProgressView().controlSize(.small) }
-                Button("Test") { test() }
+                Button("测试") { test() }
                     .disabled(testing)
-                    .help("Actually runs \(cli.label) with a trivial prompt (\"reply with OK\") to check it works")
+                    .help("用一个简单的 prompt（“reply with OK”）真正运行一次 \(cli.label)，看它能不能用")
                     .pointingHand(enabled: !testing)
                 if let customEntry {
-                    Button("Edit") { model.editingCustomAssistantCLI = customEntry }
+                    Button("编辑") { model.editingCustomAssistantCLI = customEntry }
                         .pointingHand()
-                    Button("Remove") { model.removeCustomAssistantCLI(customEntry) }
+                    Button("移除") { model.removeCustomAssistantCLI(customEntry) }
                         .pointingHand()
                 }
             }
@@ -588,10 +583,10 @@ private struct AskCLIRow: View {
             do {
                 let result = try copilot.run(cli: target, prompt: "reply with OK", in: directory, timeout: 30)
                 await MainActor.run {
-                    let firstLine = result.output.split(separator: "\n").first.map(String.init) ?? "(no output)"
+                    let firstLine = result.output.split(separator: "\n").first.map(String.init) ?? "（无输出）"
                     testResult = result.timedOut
-                        ? "Timed out."
-                        : "Exit code \(result.exitCode) — \(firstLine)"
+                        ? "超时。"
+                        : "退出码 \(result.exitCode)：\(firstLine)"
                     testing = false
                 }
             } catch {
@@ -630,21 +625,20 @@ private struct AssistantSettingsRow: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("\(skillCount) \(skillCount == 1 ? "skill" : "skills")")
+            Text("\(skillCount) 个技能")
                 .font(.caption)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
-            Toggle("Show and count", isOn: Binding(
+            Toggle("显示并计数", isOn: Binding(
                 get: { !model.hiddenAssistantIDs.contains(assistant.id) },
                 set: { model.setAssistantHidden(assistant, hidden: !$0) }
             ))
             .toggleStyle(.checkbox)
             .labelsHidden()
             .help(
-                "Show \(assistant.label) in the list rows and detail panel, and count its sessions "
-                    + "in usage. Unchecking hides it and stops counting it; nothing is deleted, and "
-                    + "checking it again brings the same numbers back. Sharing and syncing keep "
-                    + "working either way."
+                "在列表行和详情面板里显示 \(assistant.label)，并把它的会话计入使用次数。"
+                    + "取消勾选会隐藏它并停止计数。不会删除任何东西，重新勾选后原来的数字都会回来。"
+                    + "无论勾不勾选，共享和同步都照常工作。"
             )
             .pointingHand()
         }
@@ -672,32 +666,32 @@ struct StorageTab: View {
                 if isCounting {
                     HStack(spacing: 6) {
                         ProgressView().controlSize(.small)
-                        Text("Counting…")
+                        Text("正在统计…")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 } else {
-                    LabeledContent("Snapshots", value: "\(report.snapshots)")
+                    LabeledContent("快照", value: "\(report.snapshots)")
                     LabeledContent(
-                        "Size on disk",
+                        "占用空间",
                         value: ByteCountFormatter.string(fromByteCount: report.bytes, countStyle: .file)
                     )
                     if report.strandedRecords > 0 {
-                        LabeledContent("Records for things that are gone", value: "\(report.strandedRecords)")
+                        LabeledContent("已不存在的内容留下的记录", value: "\(report.strandedRecords)")
                     }
                 }
 
                 HStack {
-                    Button("Show in Finder") { model.revealBackups() }
-                        .help("Reveal \(model.paths.backups.path) in Finder")
+                    Button("在访达中显示") { model.revealBackups() }
+                        .help("在访达中显示 \(model.paths.backups.path)")
                         .pointingHand()
                     Spacer()
-                    Button("Clean up now") { confirmingDelete = true }
+                    Button("立即清理") { confirmingDelete = true }
                         .disabled(isDeleting || isCounting || report.isEmpty)
                         .help(
                             report.isEmpty
-                                ? "Nothing to clear right now"
-                                : "Sweep snapshots older than 30 days and records for things that no longer exist"
+                                ? "现在没有需要清理的内容"
+                                : "清掉超过 30 天的快照，以及已不存在的内容留下的记录"
                         )
                         .pointingHand(enabled: !(isDeleting || isCounting || report.isEmpty))
                 }
@@ -708,12 +702,11 @@ struct StorageTab: View {
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                Text("What Loadout keeps")
+                Text("Loadout 保存的内容")
             } footer: {
                 Text(
-                    "Before every edit Loadout copies the file, which is why a mistake is "
-                    + "survivable. Copies older than 30 days are swept automatically at launch, "
-                    + "to the Trash — so nothing is gone until you empty it."
+                    "每次编辑前 Loadout 都会先复制一份文件，所以改错了也能挽回。"
+                    + "超过 30 天的副本会在启动时自动移到废纸篓，清倒废纸篓之前都不会真的消失。"
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -725,17 +718,16 @@ struct StorageTab: View {
                         Text(url.lastPathComponent)
                             .font(.system(size: 12, design: .monospaced))
                     }
-                    Button("Show in Finder") { model.revealBackups() }
+                    Button("在访达中显示") { model.revealBackups() }
                         .pointingHand()
                 } header: {
-                    Text("Couldn’t be read")
+                    Text("无法读取")
                 } footer: {
                     // Never swept: an unreadable file is a question, and deleting it answers it
                     // the wrong way. Something switched off may be recorded in here.
                     Text(
-                        "These are Loadout’s own records and something switched off may be "
-                        + "written in them. They are left alone rather than cleared, so nothing "
-                        + "is lost while the cause is unknown."
+                        "这些是 Loadout 自己的记录，里面可能记着某些已停用的内容。"
+                        + "原因查明之前不会清理它们，免得丢东西。"
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -745,13 +737,13 @@ struct StorageTab: View {
         .formStyle(.grouped)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task { await recount() }
-        .alert("Clean up now?", isPresented: $confirmingDelete) {
-            Button("Cancel", role: .cancel) {}
-            Button("Clean up", role: .destructive) { Task { await sweep() } }
+        .alert("立即清理？", isPresented: $confirmingDelete) {
+            Button("取消", role: .cancel) {}
+            Button("清理", role: .destructive) { Task { await sweep() } }
         } message: {
             Text(
-                "Backup copies older than 30 days go to the Trash, and records for things that no "
-                + "longer exist are forgotten. Nothing you wrote is touched."
+                "超过 30 天的备份副本会移到废纸篓，已不存在的内容留下的记录会被清除。"
+                + "你写的内容不会被动到。"
             )
         }
     }
@@ -779,12 +771,12 @@ struct StorageTab: View {
     private func describe(_ done: Housekeeping.Report) -> String {
         var parts: [String] = []
         if done.expiredSnapshots > 0 {
-            parts.append("\(done.expiredSnapshots) \(done.expiredSnapshots == 1 ? "snapshot" : "snapshots")")
+            parts.append("\(done.expiredSnapshots) 个快照")
         }
         if done.strandedRecords > 0 {
-            parts.append("\(done.strandedRecords) \(done.strandedRecords == 1 ? "record" : "records")")
+            parts.append("\(done.strandedRecords) 条记录")
         }
-        return parts.isEmpty ? "Nothing to clear." : "Cleared " + parts.joined(separator: " and ") + "."
+        return parts.isEmpty ? "没有需要清理的内容。" : "已清理 " + parts.joined(separator: "和 ") + "。"
     }
 }
 
@@ -804,24 +796,24 @@ struct HelpTab: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                section("What switching something off does") {
-                    line("A skill", "moves to a `skills-off` folder beside the assistant that owns it — never into another assistant's. Switching it on asks which assistants should load it again.")
-                    line("A command or subagent", "moves to `commands-off` or `agents-off` next to it.")
-                    line("From a plugin", "Claude skills move aside inside the installed plugin. Codex skills use Codex's own enable setting. Loadout keeps individual off choices when the plugin updates.")
-                    line("A whole plugin", "turns all its skills off in the list, without forgetting your individual choices. Turn the plugin back on to restore those choices. Workspace-managed Codex plugins must be changed in Codex.")
-                    line("An MCP server", "its entry is lifted out of ~/.claude.json and kept, to be put back exactly as it was.")
-                    line("Nothing is deleted", "and every write takes a backup first. Deleting is a separate gesture, and it goes to the Trash.")
+                section("停用某项时会发生什么") {
+                    line("技能", "移到所属助手旁边的 `skills-off` 文件夹，绝不会移进别的助手的目录。重新启用时会问你要让哪些助手再次加载它。")
+                    line("命令或子代理", "移到旁边的 `commands-off` 或 `agents-off`。")
+                    line("插件里的技能", "Claude 的技能在已安装的插件内部挪到一旁。Codex 的技能用 Codex 自己的启用设置。插件更新后，Loadout 会保留你对单项的停用选择。")
+                    line("整个插件", "列表里它的所有技能都会停用，但不会忘记你对单项的选择。重新启用插件就能恢复这些选择。由工作区管理的 Codex 插件要在 Codex 里修改。")
+                    line("MCP 服务器", "它的条目会从 ~/.claude.json 里取出并保存好，之后原样放回。")
+                    line("不会删除任何东西", "每次写入前都会先备份。删除是另一个单独的操作，删掉的东西会进废纸篓。")
                 }
 
-                section("Where Loadout keeps its own files") {
+                section("Loadout 自己的文件放在哪里") {
                     pathRow(model.paths.support)
-                    Text("Backups, the usage index, and the notes of what is switched off. Deliberately not inside ~/.claude, which belongs to Claude Code.")
+                    Text("备份、使用情况索引，以及已停用内容的记录。特意不放在 ~/.claude 里，那是 Claude Code 的地方。")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                section("When something is wrong") {
+                section("出问题时") {
                     Text(diagnostics)
                         .font(.system(size: 11, design: .monospaced))
                         .textSelection(.enabled)
@@ -829,26 +821,26 @@ struct HelpTab: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
                     HStack {
-                        Button("Report a bug") { BugReport.open(model) }
-                            .help("Opens a new issue on GitHub with the version and system already filled in")
+                        Button("报告问题") { BugReport.open(model) }
+                            .help("在 GitHub 上新建一个 issue，版本和系统信息已经填好")
                             .pointingHand()
-                        Button(copied ? "Copied" : "Copy these details") { copyDiagnostics() }
-                            .help("Copy the lines above, to paste wherever you are reporting it")
+                        Button(copied ? "已拷贝" : "拷贝这些信息") { copyDiagnostics() }
+                            .help("拷贝上面几行，粘贴到你报告问题的地方")
                             .pointingHand()
                         Spacer()
-                        Button("Open the guide") { BugReport.openGuide() }
-                        .help("The README, which covers what the app does and how it is built")
+                        Button("打开使用指南") { BugReport.openGuide() }
+                        .help("README，介绍这个 App 能做什么、是怎么做的")
                         .pointingHand()
                     }
                 }
 
-                section("Free, and stays free") {
+                section("免费，而且一直免费") {
                     HStack(spacing: 8) {
-                        Text("If Loadout saves you time, a coffee keeps the next release coming.")
+                        Text("如果 Loadout 帮你省了时间，一杯咖啡能让下个版本更快到来。")
                             .font(.system(size: 11.5))
                             .foregroundStyle(.secondary)
-                        Button("Buy me a coffee ☕") { BugReport.openCoffee() }
-                            .help("Opens buymeacoffee.com in the browser")
+                        Button("请我喝杯咖啡 ☕") { BugReport.openCoffee() }
+                            .help("在浏览器中打开 buymeacoffee.com")
                             .pointingHand()
                     }
                 }
@@ -868,7 +860,7 @@ struct HelpTab: View {
     private func line(_ subject: String, _ rest: String) -> some View {
         // `.init` so the whole sentence is read as markdown: interpolating a `LocalizedStringKey`
         // into a plain string prints the key's own description, brackets and all.
-        Text(.init("**\(subject)** — \(rest)"))
+        Text(.init("**\(subject)**：\(rest)"))
             .font(.system(size: 11.5))
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -881,9 +873,9 @@ struct HelpTab: View {
                 .textSelection(.enabled)
                 .lineLimit(1)
                 .truncationMode(.middle)
-            Button("Reveal") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+            Button("在访达中显示") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
                 .buttonStyle(.link)
-                .help("Open that folder in the Finder")
+                .help("在访达中打开这个文件夹")
                 .pointingHand()
         }
     }

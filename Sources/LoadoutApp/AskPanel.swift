@@ -26,7 +26,7 @@ struct AskPanel: View {
                 proposalsArea
             }
             if model.ask.isGlobal && model.ask.hasUnsavedChanges {
-                Button("Save accepted changes") { model.saveChatChanges() }
+                Button("保存已接受的更改") { model.saveChatChanges() }
                     .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: !model.ask.isRunning))
                     .disabled(model.ask.isRunning)
                     .padding(10)
@@ -44,38 +44,38 @@ struct AskPanel: View {
             Image(systemName: "sparkles")
                 .font(.system(size: 11))
                 .foregroundStyle(V2.link)
-            Text("Chat")
+            Text("对话")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(V2.text)
                 .help(
                     model.ask.cli.map {
-                        "\($0.label) is answering this conversation"
-                    } ?? "The assistant that answers here"
+                        "\($0.label) 正在回答这段对话"
+                    } ?? "在这里回答的助手"
                 )
             // A bare spinner at this size is almost invisible against the bar, so it says what it
             // is doing in words beside it.
             if model.ask.isRunning {
                 ProgressView().controlSize(.small).scaleEffect(0.65)
-                Text("Working…")
+                Text("正在处理…")
                     .font(.system(size: 11))
                     .foregroundStyle(V2.link)
-                    .help("\(model.ask.cli?.label ?? "The assistant") is still working. Stop is beside the message box.")
+                    .help("\(model.ask.cli?.label ?? "助手") 还在处理。“停止”按钮在消息框旁边。")
             }
             Spacer(minLength: 6)
-            Button("History") { historyOpen.toggle() }
+            Button("历史记录") { historyOpen.toggle() }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: !model.ask.history.isEmpty))
                 .disabled(model.ask.history.isEmpty)
-                .help("Your earlier conversations")
+                .help("你之前的对话")
                 .pointingHand(enabled: !model.ask.history.isEmpty)
                 .popover(isPresented: $historyOpen, arrowEdge: .bottom) { historyList }
-            Button("New") { model.ask.startNewConversation() }
+            Button("新对话") { model.ask.startNewConversation() }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: model.ask.canLeaveConversation))
                 .disabled(!model.ask.canLeaveConversation)
-                .help("Start a fresh conversation. This one is kept, under History.")
+                .help("开始一段新对话。当前这段会保留在“历史记录”里。")
                 .pointingHand(enabled: model.ask.canLeaveConversation)
-            Button("Close") { model.showsAskPanel = false }
+            Button("关闭") { model.showsAskPanel = false }
                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                .help("Hide the conversation. It is kept, and reopens where you left it.")
+                .help("隐藏对话。对话会保留，下次打开时从离开的地方继续。")
                 .pointingHand()
         }
         .padding(.horizontal, 10)
@@ -86,7 +86,7 @@ struct AskPanel: View {
     /// so this list can only ever offer what the assistant can still resume.
     private var historyList: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Conversations")
+            Text("对话")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(V2.textMid)
                 .padding(.horizontal, 12)
@@ -107,7 +107,7 @@ struct AskPanel: View {
                                         .foregroundStyle(V2.text)
                                         .lineLimit(1)
                                     if conversation.id == model.ask.sessionID {
-                                        Text("open")
+                                        Text("当前")
                                             .font(.system(size: 9.5))
                                             .foregroundStyle(V2.link)
                                     }
@@ -172,8 +172,8 @@ struct AskPanel: View {
     private static let bottomAnchor = "ask-bottom"
 
     private var emptyText: String {
-        let name = model.ask.cli?.label ?? "the assistant"
-        return "Ask \(name) about your setup. Use Ask on a skill to attach it here. Review proposed changes before saving them."
+        let name = model.ask.cli?.label ?? "助手"
+        return "向 \(name) 询问你的配置。在技能上点“提问”可以把它附加到这里。保存前先检查建议的更改。"
     }
 
     // MARK: - Proposals
@@ -192,9 +192,7 @@ struct AskPanel: View {
         VStack(alignment: .leading, spacing: 8) {
             if documentPending > 0 {
                 Label(
-                    documentPending == 1
-                        ? "1 change waiting in the document, on the left"
-                        : "\(documentPending) changes waiting in the document, on the left",
+                    "左侧文档中有 \(documentPending) 处更改待处理",
                     systemImage: "arrow.left"
                 )
                 .font(.system(size: 10.5))
@@ -202,9 +200,7 @@ struct AskPanel: View {
             }
 
             if !sideProposals.isEmpty {
-                Text(sideProposals.count == 1
-                     ? "1 changed file"
-                     : "\(sideProposals.count) changed files")
+                Text("\(sideProposals.count) 个文件有更改")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(V2.text)
 
@@ -226,8 +222,8 @@ struct AskPanel: View {
                     ?? sideProposals.first {
                     Label(
                         focused.isNew
-                            ? "\(model.ask.proposalLabel(focused.id)) is new. It is written when you save."
-                            : "\(model.ask.proposalLabel(focused.id)) is written when you save, with a backup first.",
+                            ? "\(model.ask.proposalLabel(focused.id)) 是新文件，保存时写入。"
+                            : "\(model.ask.proposalLabel(focused.id)) 会在保存时写入，写入前先备份。",
                         systemImage: focused.isNew ? "doc.badge.plus" : "doc.text"
                     )
                     .font(.system(size: 10.5))
@@ -249,13 +245,13 @@ struct AskPanel: View {
 
                     if !focused.pending.isEmpty {
                         HStack(spacing: 6) {
-                            Button("Accept all") { model.ask.acceptAll(in: focused.id) }
+                            Button("全部接受") { model.ask.acceptAll(in: focused.id) }
                                 .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: true))
-                                .help("Take every change waiting in \(focused.id), and write it when you save")
+                                .help("接受 \(focused.id) 中所有待处理的更改，保存时写入")
                                 .pointingHand()
-                            Button("Reject all") { model.ask.rejectAll(in: focused.id) }
+                            Button("全部拒绝") { model.ask.rejectAll(in: focused.id) }
                                 .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                                .help("Drop every change waiting in \(focused.id) and leave the file as it is")
+                                .help("丢弃 \(focused.id) 中所有待处理的更改，文件保持原样")
                                 .pointingHand()
                         }
                     }
@@ -276,7 +272,7 @@ struct AskPanel: View {
     private var composer: some View {
         VStack(alignment: .leading, spacing: 8) {
             if model.ask.contexts.isEmpty {
-                Text("Global · no skills attached")
+                Text("全局 · 未附加技能")
                     .font(.system(size: 11)).foregroundStyle(V2.textDim)
             } else {
                 ScrollView(.horizontal) {
@@ -290,8 +286,8 @@ struct AskPanel: View {
                             }
                             .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: !model.ask.isRunning))
                             .disabled(model.ask.isRunning)
-                            .help("Remove \(context.name) from the attachments for future messages. Earlier messages stay in the conversation.")
-                            .accessibilityLabel("Remove \(context.name) from chat")
+                            .help("之后的消息不再附加 \(context.name)。之前的消息仍留在对话里。")
+                            .accessibilityLabel("从对话中移除 \(context.name)")
                         }
                     }
                 }
@@ -301,7 +297,7 @@ struct AskPanel: View {
                     Button(cli.label) { model.openChat(cli) }
                 }
             } label: {
-                Text(model.ask.cli?.label ?? "Choose assistant")
+                Text(model.ask.cli?.label ?? "选择助手")
                     .font(.system(size: 11))
             }
             .menuStyle(.borderlessButton)
@@ -325,9 +321,9 @@ struct AskPanel: View {
                     .lineLimit(2)
                 Spacer(minLength: 6)
                 if model.ask.isRunning {
-                    Button("Stop") { model.ask.stop() }
+                    Button("停止") { model.ask.stop() }
                         .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                        .help("Kill the assistant's process now")
+                        .help("立即结束助手的进程")
                         .pointingHand()
                 } else {
                     // The shortcut is written on the button because ⌘↵ is not guessable, and
@@ -336,7 +332,7 @@ struct AskPanel: View {
                         model.sendAskMessage()
                     } label: {
                         HStack(spacing: 6) {
-                            Text("Send")
+                            Text("发送")
                             Text("⌘↵")
                                 .font(.system(size: 11))
                                 .opacity(0.6)
@@ -351,7 +347,7 @@ struct AskPanel: View {
                         )
                         .disabled(model.ask.draftMessage.trimmingCharacters(in: .whitespaces).isEmpty)
                         .keyboardShortcut(.return, modifiers: .command)
-                        .help("Send this message (⌘↵)")
+                        .help("发送这条消息（⌘↵）")
                         .pointingHand(
                             enabled: !model.ask.draftMessage
                                 .trimmingCharacters(in: .whitespaces).isEmpty
@@ -380,7 +376,7 @@ struct AskPanel: View {
                 Button {
                     model.ask.chosenModel = nil
                 } label: {
-                    Label("Default", systemImage: chosen == nil ? "checkmark" : "")
+                    Label("默认", systemImage: chosen == nil ? "checkmark" : "")
                 }
                 Divider()
                 ForEach(known) { entry in
@@ -388,13 +384,13 @@ struct AskPanel: View {
                         model.ask.chosenModel = entry.id
                     } label: {
                         Label(
-                            "\(entry.label) — \(entry.note)",
+                            "\(entry.label)：\(entry.note)",
                             systemImage: chosen == entry.id ? "checkmark" : ""
                         )
                     }
                 }
                 Divider()
-                Button("Another model…") { isTypingModel = true }
+                Button("其他模型…") { isTypingModel = true }
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "cpu")
@@ -406,7 +402,7 @@ struct AskPanel: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-            .help("Which model \(cli.label) answers with. Default lets it use whatever you configured.")
+            .help("\(cli.label) 用哪个模型回答。“默认”会沿用你自己配置的模型。")
             .pointingHand()
             .popover(isPresented: $isTypingModel) {
                 typedModelBox(cli: cli)
@@ -417,15 +413,15 @@ struct AskPanel: View {
     /// What the button reads: the friendly name when the model is one Loadout knows, the name
     /// itself when it was typed, and "Default" when nothing was chosen.
     private func modelLabel(for cli: AssistantCLI, chosen: String?) -> String {
-        guard let chosen, !chosen.isEmpty else { return "Default" }
+        guard let chosen, !chosen.isEmpty else { return "默认" }
         return AssistantModels.known(for: cli.id).first { $0.id == chosen }?.label ?? chosen
     }
 
     private func typedModelBox(cli: AssistantCLI) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Model name")
+            Text("模型名称")
                 .font(.system(size: 12, weight: .semibold))
-            Text("Passed to \(cli.label) exactly as you type it.")
+            Text("按你输入的原样传给 \(cli.label)。")
                 .font(.system(size: 11))
                 .foregroundStyle(V2.textFaint)
             TextField("", text: $typedModel)
@@ -434,13 +430,13 @@ struct AskPanel: View {
                 .onSubmit { commitTypedModel() }
             HStack {
                 Spacer()
-                Button("Cancel") { isTypingModel = false }
-                    .help("Close without changing which model answers")
+                Button("取消") { isTypingModel = false }
+                    .help("关闭，不更改回答所用的模型")
                     .pointingHand()
-                Button("Use") { commitTypedModel() }
+                Button("使用") { commitTypedModel() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(typedModel.trimmingCharacters(in: .whitespaces).isEmpty)
-                    .help("Ask \(cli.label) with this model from now on, until you change it")
+                    .help("从现在起用这个模型向 \(cli.label) 提问，直到你再次更改")
                     .pointingHand(enabled: !typedModel.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
@@ -458,9 +454,9 @@ struct AskPanel: View {
     private var hint: String {
         guard let cli = model.ask.cli else { return "" }
         if cli.chat?.resumeTemplate == nil {
-            return "\(cli.label) starts fresh each message — it can't pick a conversation back up."
+            return "\(cli.label) 每条消息都从头开始，无法接着之前的对话继续。"
         }
-        return "Attached files change only when you accept and save."
+        return "附加的文件只有在你接受并保存后才会改变。"
     }
 }
 
@@ -491,7 +487,7 @@ private struct AskTypingDots: View {
                 withAnimation(.easeInOut(duration: 0.22)) { phase = (phase + 1) % 3 }
             }
         }
-        .accessibilityLabel("Working")
+        .accessibilityLabel("正在处理")
     }
 }
 
@@ -504,7 +500,7 @@ private struct AskEntryRow: View {
         switch entry.kind {
         case .you:
             VStack(alignment: .leading, spacing: 3) {
-                Text("You")
+                Text("你")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(V2.textDim)
                 Text(entry.text)
@@ -581,7 +577,7 @@ private struct AskBlockCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
-                Text("Line \(block.start + 1)")
+                Text("第 \(block.start + 1) 行")
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(V2.textDim)
                 Text(block.summary)
@@ -590,32 +586,32 @@ private struct AskBlockCard: View {
                 Spacer(minLength: 4)
                 switch state {
                 case .pending:
-                    Button("Reject", action: reject)
+                    Button("拒绝", action: reject)
                         .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                        .help("Leave these lines as they are and drop this change")
+                        .help("保留这几行原样，丢弃这处更改")
                         .pointingHand()
-                    Button("Accept", action: accept)
+                    Button("接受", action: accept)
                         .buttonStyle(V2ToolbarButtonStyle(prominent: true, enabled: true))
-                        .help("Take this change. It reaches the file when you save, and not before.")
+                        .help("接受这处更改。保存时才会写入文件。")
                         .pointingHand()
                 case .accepted:
-                    Button("Undo", action: reject)
+                    Button("撤销", action: reject)
                         .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                        .help("Take this change back out again")
+                        .help("把这处更改再撤回来")
                         .pointingHand()
-                    Label("Accepted", systemImage: "checkmark")
+                    Label("已接受", systemImage: "checkmark")
                         .font(.system(size: 10))
                         .foregroundStyle(V2.ok)
-                        .help("Waiting to be written into the file when you save")
+                        .help("等你保存时写入文件")
                 case .rejected:
-                    Button("Accept", action: accept)
+                    Button("接受", action: accept)
                         .buttonStyle(V2ToolbarButtonStyle(prominent: false, enabled: true))
-                        .help("Change your mind and take this change after all")
+                        .help("改主意了，还是接受这处更改")
                         .pointingHand()
-                    Text("Rejected")
+                    Text("已拒绝")
                         .font(.system(size: 10))
                         .foregroundStyle(V2.textFaint)
-                        .help("Left out, so the file keeps the lines it has")
+                        .help("未采用，文件保留原有的这几行")
                 }
             }
 

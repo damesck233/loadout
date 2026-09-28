@@ -558,7 +558,7 @@ final class AppModel {
                 // The edited item itself vanished from disk. The draft must not be
                 // grafted onto whatever got selected next — that used to end with A's
                 // text saved into B's file.
-                statusMessage = "The file being edited disappeared — unsaved changes were discarded."
+                statusMessage = "正在编辑的文件不见了，未保存的更改已丢弃。"
             }
             loadDraft()
         }
@@ -670,7 +670,7 @@ final class AppModel {
 
     func save() {
         guard let item = selected else { return }
-        perform("Saved \(item.name).") {
+        perform("已保存 \(item.name)。") {
             try mutations.save(item, contents: draft)
             diskDraft = draft
             isDirty = false
@@ -692,8 +692,8 @@ final class AppModel {
         }
         ask.refreshProposals()
         statusMessage = files.count == 1
-            ? "Saved \(item.name) and \(files[0].id)."
-            : "Saved \(item.name) and \(files.count) files beside it."
+            ? "已保存 \(item.name) 和 \(files[0].id)。"
+            : "已保存 \(item.name) 和旁边的 \(files.count) 个文件。"
     }
 
     // MARK: - Ask
@@ -758,7 +758,7 @@ final class AppModel {
     /// The switch on a row. Off is one gesture and never asks; on can be a question.
     func toggle(_ item: Item) {
         if pluginIsOff(for: item) {
-            errorMessage = "Turn on the \(item.origin.label) plugin before changing this item."
+            errorMessage = "先启用 \(item.origin.label) 插件，再修改这一项。"
             return
         }
         if item.kind == .command || item.kind == .agent {
@@ -768,7 +768,7 @@ final class AppModel {
         if item.kind == .mcp {
             // An MCP server is a few lines inside ~/.claude.json rather than a file, so switching
             // it off lifts the entry out and keeps it; switching it on puts back what was lifted.
-            perform(item.enabled ? "Disabled \(item.name)." : "Enabled \(item.name).") {
+            perform(item.enabled ? "已停用 \(item.name)。" : "已启用 \(item.name)。") {
                 try mutations.setServer(item, enabled: !item.enabled)
             }
             return
@@ -806,7 +806,7 @@ final class AppModel {
             return
         }
 
-        perform("Enabled \(item.name).") { try mutations.enableSkill(item) }
+        perform("已启用 \(item.name)。") { try mutations.enableSkill(item) }
     }
 
     /// Takes a copy of something that lives in a repository and makes it yours everywhere.
@@ -829,7 +829,7 @@ final class AppModel {
         do {
             let destination = try mutations.makeGlobal(item)
             makeGlobalDestination = readablePath(destination)
-            statusMessage = "Copied \(item.name) to your \(item.kind.briefingNoun)s. The project keeps its own."
+            statusMessage = "已把 \(item.name) 复制到你的全局\(Self.displayNoun(item.kind))中。项目里的那份保留不动。"
             errorMessage = nil
             reload()
         } catch {
@@ -870,6 +870,18 @@ final class AppModel {
         url.path.replacingOccurrences(of: paths.home.path, with: "~")
     }
 
+    /// The kind as a person reads it in a status line. `briefingNoun` stays English: it is what the
+    /// assistant is told.
+    static func displayNoun(_ kind: ItemKind) -> String {
+        switch kind {
+        case .skill: return "技能"
+        case .command: return "命令"
+        case .agent: return "子代理"
+        case .mcp: return "MCP 服务器"
+        case .plugin: return "插件"
+        }
+    }
+
     /// A command is a file beside its neighbours, so there is nowhere to choose on the way back:
     /// off and on are both one gesture (AC10.5, AC10.8).
     func toggleCommand(_ item: Item) {
@@ -878,7 +890,7 @@ final class AppModel {
             return
         }
         let plugin = plugins.first { $0.id == item.pluginID }
-        perform(item.enabled ? "Disabled \(item.name)." : "Enabled \(item.name).") {
+        perform(item.enabled ? "已停用 \(item.name)。" : "已启用 \(item.name)。") {
             try mutations.setCommand(item, enabled: !item.enabled, plugin: plugin)
         }
     }
@@ -889,7 +901,7 @@ final class AppModel {
         let root = context.map {
             kind == .agent ? paths.projectAgents($0.path) : paths.projectCommands($0.path)
         }
-        perform("Created the \(name) \(kind == .agent ? "subagent" : "command").") {
+        perform("已创建\(kind == .agent ? "子代理" : "命令") \(name)。") {
             try mutations.createCommand(name: name, description: description, in: root, kind: kind)
             selection = kind == .agent ? .agents : .commands
             selectedID = "\(kind.rawValue):\(context.map(\.name) ?? Origin.personal.label):\(name)"
@@ -900,7 +912,7 @@ final class AppModel {
     func disable(_ item: Item) {
         // The id survives an enable/disable, so the selection does too — nil-ing it here used to
         // jump the detail pane to whatever sorted first.
-        perform("Disabled \(item.name).") {
+        perform("已停用 \(item.name)。") {
             if item.kind == .command || item.kind == .agent {
                 try mutations.setCommand(item, enabled: false, plugin: plugins.first { $0.id == item.pluginID })
             } else if item.kind == .mcp {
@@ -915,17 +927,17 @@ final class AppModel {
     func togglePluginSkill(_ item: Item) {
         guard let plugin = plugins.first(where: { $0.id == item.pluginID })
         else {
-            errorMessage = "Couldn't tell which plugin \(item.name) came from."
+            errorMessage = "无法判断 \(item.name) 来自哪个插件。"
             return
         }
         guard plugin.enabled else {
-            errorMessage = "Turn on the \(plugin.name) plugin before changing this skill."
+            errorMessage = "先启用 \(plugin.name) 插件，再修改这个技能。"
             return
         }
         perform(
             item.enabled
-                ? "Disabled \(item.name) from the \(plugin.name) plugin."
-                : "Enabled \(item.name) from the \(plugin.name) plugin."
+                ? "已停用 \(plugin.name) 插件里的 \(item.name)。"
+                : "已启用 \(plugin.name) 插件里的 \(item.name)。"
         ) {
             if item.enabled {
                 try mutations.disablePluginSkill(item, in: plugin)
@@ -941,8 +953,8 @@ final class AppModel {
         let chosen = assistants.filter { restoring.chosen.contains($0.id) }
         self.restoring = nil
         guard !chosen.isEmpty else { return }
-        let where_ = chosen.map(\.label).joined(separator: " and ")
-        perform("Enabled \(restoring.item.name) in \(where_).") {
+        let where_ = chosen.map(\.label).joined(separator: "、")
+        perform("已在 \(where_) 中启用 \(restoring.item.name)。") {
             try mutations.enableSkill(restoring.item, into: chosen, assistants: assistants)
         }
     }
@@ -978,7 +990,7 @@ final class AppModel {
         guard !broken.isEmpty else { return }
         let names = broken.map { $0.lastPathComponent }.joined(separator: ", ")
         errorMessage = """
-        Loadout can't read its own record of what you switched off (\(names)), so anything parked         there is missing from these lists. Nothing has been changed or deleted. The file is in         \(displayPath(broken[0].deletingLastPathComponent())) — fix or remove it, then reload.
+        Loadout 无法读取自己记录的停用清单（\(names)），所以停放在那里的项目不会出现在这些列表中。没有任何内容被修改或删除。该文件位于 \(displayPath(broken[0].deletingLastPathComponent()))，修复或移除它后再重新载入。
         """
     }
 
@@ -1033,13 +1045,13 @@ final class AppModel {
     /// Fills or removes a gap in the assistant dots.
     func setAssistant(_ assistant: Assistant, on item: Item, present: Bool) {
         var done = present
-            ? "\(assistant.label) now loads \(item.name)."
-            : "\(assistant.label) no longer loads \(item.name)."
+            ? "\(assistant.label) 现在会加载 \(item.name)。"
+            : "\(assistant.label) 不再加载 \(item.name)。"
         // A command's frontmatter is Claude Code's own vocabulary: `allowed-tools` and
         // `disable-model-invocation` are dead text anywhere else. The file travels; part of its
         // meaning does not, and that gets said rather than discovered later (AC10.12).
         if item.kind == .command, present, assistant.id != "claude" {
-            done += " Claude-only frontmatter doesn't carry over."
+            done += "仅 Claude 支持的 frontmatter 不会带过去。"
         }
         perform(done) {
             if item.kind == .command {
@@ -1068,7 +1080,7 @@ final class AppModel {
     func syncAll(to assistant: Assistant) {
         let missing = gaps(for: assistant)
         guard !missing.isEmpty else {
-            statusMessage = "\(assistant.label) already has everything."
+            statusMessage = "\(assistant.label) 已经全都有了。"
             return
         }
         var failures: [String] = []
@@ -1081,17 +1093,17 @@ final class AppModel {
         }
         reload()
         if failures.isEmpty {
-            statusMessage = "\(assistant.label) now loads \(missing.count) \(missing.count == 1 ? "skill" : "skills")."
+            statusMessage = "\(assistant.label) 现在会加载 \(missing.count) 个技能。"
             errorMessage = nil
         } else {
-            errorMessage = "Couldn't sync: \(failures.joined(separator: ", "))."
+            errorMessage = "无法同步：\(failures.joined(separator: "、"))。"
         }
     }
 
     /// Opens the note that precedes uninstalling a plugin.
     func removePlugin(_ plugin: PluginInfo) {
         guard plugin.assistant == "claude" else {
-            errorMessage = "Remove this plugin in Codex. You can turn it off here without removing its files."
+            errorMessage = "请在 Codex 中移除这个插件。你可以在这里停用它，而不删除它的文件。"
             return
         }
         pendingPluginRemoval = plugin
@@ -1105,7 +1117,7 @@ final class AppModel {
         do {
             try mutations.removePlugin(plugin)
             pluginRemovalDone = true
-            statusMessage = "Removed the \(plugin.name) plugin. Its folder is in the Trash."
+            statusMessage = "已移除 \(plugin.name) 插件。它的文件夹在废纸篓里。"
             errorMessage = nil
             if selectedPluginID == plugin.id { selectedPluginID = nil }
             reload()
@@ -1129,15 +1141,15 @@ final class AppModel {
     /// What a plugin ships, counted by kind, for the line that says what removing it takes away.
     func pluginContents(_ plugin: PluginInfo) -> String {
         let items = itemsOfPlugin(plugin)
-        let counts: [(ItemKind, String)] = [(.skill, "skill"), (.command, "command"), (.agent, "subagent")]
+        let counts: [(ItemKind, String)] = [(.skill, "个技能"), (.command, "条命令"), (.agent, "个子代理")]
         let parts = counts.compactMap { kind, noun -> String? in
             let total = items.filter { $0.kind == kind }.count
             guard total > 0 else { return nil }
-            return "\(total) \(noun)\(total == 1 ? "" : "s")"
+            return "\(total) \(noun)"
         }
-        guard !parts.isEmpty else { return "nothing this app can see" }
+        guard !parts.isEmpty else { return "没有本应用能看到的内容" }
         guard parts.count > 1 else { return parts[0] }
-        return parts.dropLast().joined(separator: ", ") + " and " + parts[parts.count - 1]
+        return parts.dropLast().joined(separator: "、") + "和 " + parts[parts.count - 1]
     }
 
     /// A plugin's folder written the way a person reads it.
@@ -1150,18 +1162,18 @@ final class AppModel {
         // and nothing else.
         if let choice = plugin.repositoryChoice, let name = context?.name {
             errorMessage = """
-            \(name) keeps the \(plugin.name) plugin \(choice ? "on" : "off") in its own settings, \
-            which Claude reads after yours. Change it in that repository, or leave this scope.
+            \(name) 在它自己的设置里把 \(plugin.name) 插件设为\(choice ? "启用" : "停用")，\
+            Claude 会在读完你的设置后再读它。请在那个仓库里修改，或者离开这个范围。
             """
             return
         }
-        perform(plugin.enabled ? "Disabled the \(plugin.name) plugin." : "Enabled the \(plugin.name) plugin.") {
+        perform(plugin.enabled ? "已停用 \(plugin.name) 插件。" : "已启用 \(plugin.name) 插件。") {
             try mutations.setPlugin(plugin, enabled: !plugin.enabled)
         }
     }
 
     func createSkill(name: String, description: String) {
-        perform("Created the \(name) skill.") {
+        perform("已创建技能 \(name)。") {
             try mutations.createSkill(name: name, description: description)
             selectedID = "skill:\(Origin.personal.label):\(name)"
         }
@@ -1217,7 +1229,7 @@ final class AppModel {
 
     func deleteSelected() {
         guard let item = selected else { return }
-        perform("Moved \(item.name) to the Trash.") {
+        perform("已将 \(item.name) 移到废纸篓。") {
             try mutations.delete(item)
             selectedID = nil
         }
@@ -1230,7 +1242,7 @@ final class AppModel {
     /// out of a settings file, where the only way back is the copy Loadout takes first.
     func removeSelectedServer() {
         guard let item = selected, item.kind == .mcp else { return }
-        perform("Removed \(item.name). A copy of the file before the change is in the backups.") {
+        perform("已移除 \(item.name)。修改前的文件副本在备份里。") {
             try mutations.removeServer(item)
             selectedID = nil
         }
@@ -1270,7 +1282,7 @@ final class AppModel {
         if ask.isGlobal, ask.cli != nil { showsAskPanel = true; return }
         guard let cli = askableCLIs.first(where: { $0.id == lastAssistantCLIID })
                 ?? askableCLIs.first else {
-            statusMessage = "Install Claude Code, Codex or OpenCode to use Chat."
+            statusMessage = "安装 Claude Code、Codex 或 OpenCode 后才能使用对话。"
             showsSettings = true
             settingsSection = "assistants"
             return
@@ -1296,28 +1308,28 @@ final class AppModel {
             for proposal in accepted {
                 guard let context = ask.context(for: proposal.id),
                       let relative = context.relativePath(for: proposal.id) else {
-                    throw LoadoutError.io("The attachment for this change is no longer available.")
+                    throw LoadoutError.io("这项更改对应的附件已不可用。")
                 }
                 guard context.isEditable else { throw LoadoutError.notEditable(context.name) }
                 var isDirectory: ObjCBool = false
                 guard FileManager.default.fileExists(atPath: context.origin.path, isDirectory: &isDirectory),
                       isDirectory.boolValue else {
-                    throw LoadoutError.io("\(context.name) moved or was removed. Attach it again before saving.")
+                    throw LoadoutError.io("\(context.name) 已被移动或移除。保存前请重新附加它。")
                 }
                 let file = context.origin.appendingPathComponent(relative)
                 guard file.resolvingSymlinksInPath().path.hasPrefix(context.origin.path + "/") else {
-                    throw LoadoutError.io("This file points outside the attachment and wasn't written.")
+                    throw LoadoutError.io("这个文件指向附件之外，未写入。")
                 }
                 guard destinations.insert(file.resolvingSymlinksInPath().path).inserted else {
-                    throw LoadoutError.io("Two attachments propose changes to the same file. Keep one proposal and reject the other before saving.")
+                    throw LoadoutError.io("两个附件对同一个文件提出了更改。保存前请保留一个，拒绝另一个。")
                 }
                 let current = try? String(contentsOf: file, encoding: .utf8)
                 guard proposal.isNew ? current == nil && !FileManager.default.fileExists(atPath: file.path)
                     : current == proposal.original else {
-                    throw LoadoutError.io("\(context.name) changed on disk. Review the updated proposal before saving.")
+                    throw LoadoutError.io("\(context.name) 在磁盘上已被修改。保存前请查看更新后的更改建议。")
                 }
                 if let selected = selected, selected.path?.resolvingSymlinksInPath() == file.resolvingSymlinksInPath(), isDirty {
-                    throw LoadoutError.io("Save or revert your edits to \(selected.name) before saving chat changes.")
+                    throw LoadoutError.io("保存对话中的更改前，请先保存或还原你对 \(selected.name) 的编辑。")
                 }
                 if relative == context.documentName, context.kind == "skill" || context.kind == "subagent" {
                     try mutations.validateSkillDocument(proposal.resolvedText)
@@ -1331,7 +1343,7 @@ final class AppModel {
             }
             ask.refreshProposals()
             reloadFromDisk()
-            statusMessage = "Saved accepted chat changes."
+            statusMessage = "已保存对话中接受的更改。"
         } catch {
             ask.refreshProposals()
             errorMessage = (error as? LoadoutError)?.errorDescription ?? error.localizedDescription
@@ -1445,10 +1457,10 @@ final class AppModel {
     /// The window the counts cover, in the words Settings uses, for saying so in the UI.
     var usageWindowLabel: String {
         switch UserDefaults.standard.string(forKey: "usageWindowDays") ?? "90" {
-        case "30": return "the last 30 days"
-        case "365": return "the last year"
-        case "all": return "all recorded history"
-        default: return "the last 90 days"
+        case "30": return "最近 30 天"
+        case "365": return "最近一年"
+        case "all": return "全部历史记录"
+        default: return "最近 90 天"
         }
     }
 
@@ -1456,7 +1468,7 @@ final class AppModel {
     var countedAssistantLabels: [String] {
         let counted = countedAssistantIDs
         let known = assistants.filter { counted.contains($0.id) }.map(\.label)
-        return known.isEmpty ? ["no assistants"] : known
+        return known.isEmpty ? ["没有助手"] : known
     }
 
     /// Every recorded use of one item, for proving a count instead of asserting it.

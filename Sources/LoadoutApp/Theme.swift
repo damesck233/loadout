@@ -64,22 +64,22 @@ enum ThemeName: String, CaseIterable, Identifiable, Sendable {
     /// What Settings calls it.
     var label: String {
         switch self {
-        case .terracotta: return "Terracotta"
-        case .graphite: return "Graphite"
-        case .violet: return "Violet"
-        case .sage: return "Sage"
-        case .plum: return "Plum"
+        case .terracotta: return "陶土"
+        case .graphite: return "石墨"
+        case .violet: return "紫罗兰"
+        case .sage: return "鼠尾草"
+        case .plum: return "梅子"
         }
     }
 
     /// One line for the swatch's tooltip — what this theme is, not what colour it is.
     var hint: String {
         switch self {
-        case .terracotta: return "Terracotta — warm clay and olive"
-        case .graphite: return "Graphite — no accent hue at all, a neutral tool"
-        case .violet: return "Violet — indigo and mint"
-        case .sage: return "Sage — forest green"
-        case .plum: return "Plum — wine"
+        case .terracotta: return "陶土：暖色陶土配橄榄绿"
+        case .graphite: return "石墨：完全没有强调色，一件中性的工具"
+        case .violet: return "紫罗兰：靛蓝配薄荷绿"
+        case .sage: return "鼠尾草：森林绿"
+        case .plum: return "梅子：酒红"
         }
     }
 

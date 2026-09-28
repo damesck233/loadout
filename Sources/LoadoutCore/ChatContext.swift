@@ -64,7 +64,7 @@ public struct GlobalChatWorkspace: Sendable {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         for context in contexts {
             guard UUID(uuidString: context.folder) != nil else {
-                throw LoadoutError.io("This conversation has an invalid attachment. Start a new chat.")
+                throw LoadoutError.io("这段对话有一个无效的附件。请开始新对话。")
             }
             let copy = try copies.open(itemID: context.folder, origin: context.origin)
             // Copying a nested link would let an edit escape the disposable folder. Omit links;

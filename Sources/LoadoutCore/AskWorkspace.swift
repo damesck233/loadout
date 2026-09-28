@@ -101,7 +101,7 @@ public struct AskWorkspaces: Sendable {
                 try fm.copyItem(at: origin, to: destination)
             } catch {
                 throw LoadoutError.io(
-                    "Couldn't make a working copy of \(origin.lastPathComponent): \(error.localizedDescription)"
+                    "无法为 \(origin.lastPathComponent) 创建工作副本：\(error.localizedDescription)"
                 )
             }
             initialiseGitRepository(at: destination)
@@ -135,7 +135,7 @@ public struct AskWorkspaces: Sendable {
     public func remove(itemID: String, hasPendingBlocks: Bool) throws {
         guard !hasPendingBlocks else {
             throw LoadoutError.io(
-                "There are still changes waiting for you to accept or reject, so the working copy was kept."
+                "还有更改等你接受或拒绝，所以工作副本已保留。"
             )
         }
         let directory = directory(for: itemID)
@@ -143,7 +143,7 @@ public struct AskWorkspaces: Sendable {
         do {
             try fm.removeItem(at: directory)
         } catch {
-            throw LoadoutError.io("Couldn't remove the working copy: \(error.localizedDescription)")
+            throw LoadoutError.io("无法移除工作副本：\(error.localizedDescription)")
         }
     }
 
